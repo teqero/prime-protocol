@@ -3,7 +3,7 @@ import { Linkedin, Instagram, Mail, Award, Globe } from 'lucide-react';
 export default function Founder() {
   return (
     <section id="founder" className="w-full bg-[#0d0f14] py-24 lg:py-32">
-      <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
+      <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
           {/* Image */}
           <div className="relative">
@@ -61,19 +61,26 @@ export default function Founder() {
 
             <div className="flex gap-3">
               <a
-                href="#"
+                href="https://www.linkedin.com/in/luciria-meury-rodrigues-de-sousa"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
                 className="w-10 h-10 border border-[#2a2520] flex items-center justify-center text-[#6b6560] hover:text-[#c9956b] hover:border-[#c9956b]/40 transition-all"
               >
                 <Linkedin size={16} />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/primeprotocol.ao"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
                 className="w-10 h-10 border border-[#2a2520] flex items-center justify-center text-[#6b6560] hover:text-[#c9956b] hover:border-[#c9956b]/40 transition-all"
               >
                 <Instagram size={16} />
               </a>
               <a
-                href="#"
+                href="mailto:info@primeprotocol.ao"
+                aria-label="Email"
                 className="w-10 h-10 border border-[#2a2520] flex items-center justify-center text-[#6b6560] hover:text-[#c9956b] hover:border-[#c9956b]/40 transition-all"
               >
                 <Mail size={16} />

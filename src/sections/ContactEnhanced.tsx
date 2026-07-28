@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export default function ContactEnhanced() {
   const [formData, setFormData] = useState({
@@ -11,28 +12,45 @@ export default function ContactEnhanced() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    
-    // Simulate sending — in production, replace with EmailJS or API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setSubmitting(false);
-    setSubmitted(true);
-    setFormData({ name: '', email: '', phone: '', service: '', message: '' });
-    
-    setTimeout(() => setSubmitted(false), 5000);
+    setError('');
+
+    try {
+      const { error: supaError } = await supabase
+        .from('contacts')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          service: formData.service,
+          message: formData.message || null,
+        });
+
+      if (supaError) throw supaError;
+
+      setSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', service: '', message: '' });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      setError('Ocorreu um erro ao enviar. Por favor, tente novamente.');
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <section id="contact" className="w-full bg-[#111318] py-24 lg:py-32">
-      <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
+      <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-3 mb-6">
@@ -109,6 +127,12 @@ export default function ContactEnhanced() {
                 <h3 className="font-serif text-[20px] font-semibold text-[#f5f0e8] mb-8">
                   Solicitar Orçamento
                 </h3>
+
+                {error && (
+                  <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-sans">
+                    {error}
+                  </div>
+                )}
 
                 <div className="space-y-5">
                   <div>

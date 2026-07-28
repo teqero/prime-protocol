@@ -1,26 +1,47 @@
 import { useState } from 'react';
 import { Send, CheckCircle, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@')) return;
 
     setStatus('loading');
-    
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1200));
-    setStatus('success');
-    setEmail('');
-    setTimeout(() => setStatus('idle'), 4000);
+    setErrorMsg('');
+
+    try {
+      const { error } = await supabase
+        .from('newsletter_subscribers')
+        .insert({ email })
+        .select();
+
+      if (error) {
+        if (error.message.includes('duplicate')) {
+          setErrorMsg('Este email já está subscrito.');
+        } else {
+          setErrorMsg('Ocorreu um erro. Tente novamente.');
+        }
+        setStatus('error');
+        return;
+      }
+
+      setStatus('success');
+      setEmail('');
+      setTimeout(() => setStatus('idle'), 4000);
+    } catch {
+      setErrorMsg('Ocorreu um erro. Tente novamente.');
+      setStatus('error');
+    }
   };
 
   return (
     <section className="w-full bg-[#0d0f14] py-20 lg:py-24 border-y border-[#2a2520]/30">
-      <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
+      <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="max-w-[700px] mx-auto text-center">
           <h3 className="font-serif text-[28px] lg:text-[32px] text-[#f5f0e8] font-semibold mb-3">
             Newsletter
@@ -59,6 +80,9 @@ export default function Newsletter() {
                 )}
               </button>
             </form>
+          )}
+          {status === 'error' && errorMsg && (
+            <p className="text-red-400 text-sm mt-3 font-sans">{errorMsg}</p>
           )}
         </div>
       </div>

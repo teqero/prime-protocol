@@ -65,7 +65,18 @@ export default function HeroParallax() {
             </ScrollReveal>
 
             <ScrollReveal delay={100}>
-              <div className="mb-6 md:mb-8">
+              <h1 className="font-serif text-[56px] md:text-[80px] lg:text-[96px] font-semibold text-[#f5f0e8] leading-[0.95] tracking-tight mb-4 md:mb-6">
+                PRIME
+              </h1>
+            </ScrollReveal>
+            <ScrollReveal delay={200}>
+              <h1 className="font-serif text-[56px] md:text-[80px] lg:text-[96px] font-light text-[#f5f0e8] leading-[0.95] tracking-tight mb-8 md:mb-10">
+                PROTOCOL
+              </h1>
+            </ScrollReveal>
+
+            <ScrollReveal delay={300}>
+              <div className="mb-8 md:mb-10">
                 <p className="text-[10px] md:text-[11px] font-sans font-medium text-[#8a7e74] tracking-wide mb-1">
                   Fundadora & CEO
                 </p>
@@ -73,17 +84,6 @@ export default function HeroParallax() {
                   Lucíria Meury Rodrigues de Sousa
                 </p>
               </div>
-            </ScrollReveal>
-
-            <ScrollReveal delay={200}>
-              <h1 className="font-serif text-[56px] md:text-[80px] lg:text-[96px] font-semibold text-[#f5f0e8] leading-[0.95] tracking-tight mb-4 md:mb-6">
-                PRIME
-              </h1>
-            </ScrollReveal>
-            <ScrollReveal delay={300}>
-              <h1 className="font-serif text-[56px] md:text-[80px] lg:text-[96px] font-light text-[#f5f0e8] leading-[0.95] tracking-tight mb-8 md:mb-10">
-                PROTOCOL
-              </h1>
             </ScrollReveal>
 
             <ScrollReveal delay={400}>

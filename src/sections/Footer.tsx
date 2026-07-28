@@ -3,16 +3,36 @@ import { ArrowUp } from 'lucide-react';
 const footerLinks = [
   {
     title: 'Empresa',
-    links: ['Sobre Nós', 'Equipa', 'Carreiras', 'Notícias'],
+    links: [
+      { label: 'Sobre Nós', href: '#about' },
+      { label: 'Equipa', href: '#founder' },
+      { label: 'Serviços', href: '#services' },
+      { label: 'Contactos', href: '#contact' },
+    ],
   },
   {
     title: 'Serviços',
-    links: ['Eventos Corporativos', 'Cerimonial', 'Protocolo Diplomático', 'Formação'],
+    links: [
+      { label: 'Eventos Corporativos', href: '#services' },
+      { label: 'Cerimonial', href: '#services' },
+      { label: 'Protocolo Diplomático', href: '#services' },
+      { label: 'Formação', href: '#services' },
+    ],
   },
   {
     title: 'Legal',
-    links: ['Termos de Uso', 'Política de Privacidade', 'Cookies'],
+    links: [
+      { label: 'Termos de Uso', href: '#' },
+      { label: 'Política de Privacidade', href: '#' },
+      { label: 'Cookies', href: '#' },
+    ],
   },
+];
+
+const socialLinks = [
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/prime-protocol-ao', abbr: 'in' },
+  { label: 'Instagram', href: 'https://www.instagram.com/primeprotocol.ao', abbr: 'ig' },
+  { label: 'Facebook', href: 'https://www.facebook.com/primeprotocol.ao', abbr: 'fb' },
 ];
 
 export default function Footer() {
@@ -37,13 +57,16 @@ export default function Footer() {
               executivos em Angola desde 2020.
             </p>
             <div className="flex gap-3">
-              {['in', 'ig', 'fb'].map((social) => (
+              {socialLinks.map((social) => (
                 <a
-                  key={social}
-                  href="#"
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
                   className="w-9 h-9 border border-[#2a2520] flex items-center justify-center text-[#6b6560] hover:text-[#c9956b] hover:border-[#c9956b]/40 transition-all text-[10px] font-sans font-semibold uppercase"
                 >
-                  {social}
+                  {social.abbr}
                 </a>
               ))}
             </div>
@@ -57,12 +80,12 @@ export default function Footer() {
               </h4>
               <ul className="space-y-3">
                 {group.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <a
-                      href="#"
+                      href={link.href}
                       className="text-[#6b6560] font-sans text-[13px] hover:text-[#c9956b] transition-colors"
                     >
-                      {link}
+                      {link.label}
                     </a>
                   </li>
                 ))}
@@ -79,6 +102,7 @@ export default function Footer() {
           <button
             onClick={scrollToTop}
             className="w-10 h-10 border border-[#2a2520] flex items-center justify-center text-[#6b6560] hover:text-[#c9956b] hover:border-[#c9956b]/40 transition-all"
+            aria-label="Voltar ao topo"
           >
             <ArrowUp size={16} />
           </button>
