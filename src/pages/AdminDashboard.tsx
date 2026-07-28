@@ -16,7 +16,9 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
+  ArrowLeft,
 } from 'lucide-react';
+import Logo from '../components/Logo';
 
 const stats = [
   { label: 'Eventos do Mês', value: '24', change: '+12%', up: true, icon: Calendar },
@@ -49,7 +51,7 @@ export default function AdminDashboard() {
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-pp-dark border-b border-pp-border/20 flex items-center justify-between px-4 z-50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full border border-pp-gold/40 flex items-center justify-center">
-            <img src="/images/logo.png" alt="" className="w-5 h-5 object-contain" />
+            <Logo size={28} />
           </div>
           <span className="font-serif text-sm font-semibold uppercase">Prime Protocol</span>
         </div>
@@ -67,7 +69,7 @@ export default function AdminDashboard() {
         >
           <div className="p-6 border-b border-pp-border/20 hidden lg:flex items-center gap-3">
             <div className="w-10 h-10 rounded-full border border-pp-gold/40 flex items-center justify-center">
-              <img src="/images/logo.png" alt="" className="w-6 h-6 object-contain" />
+              <Logo size={32} />
             </div>
             <div>
               <span className="font-serif text-sm font-semibold uppercase block">Prime Protocol</span>
@@ -98,12 +100,19 @@ export default function AdminDashboard() {
           </nav>
 
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-pp-border/20">
+            <a
+              href="/"
+              className="flex items-center gap-2 px-4 py-2 text-[11px] text-pp-cream-dim hover:text-pp-gold transition-colors mb-2"
+            >
+              <ArrowLeft size={14} />
+              Voltar ao site
+            </a>
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="w-9 h-9 rounded-full bg-pp-gold/20 flex items-center justify-center">
                 <span className="font-serif text-sm text-pp-gold font-semibold">LM</span>
               </div>
               <div>
-                <p className="text-sm font-medium text-pp-cream">Lucrécia Sousa</p>
+                <p className="text-sm font-medium text-pp-cream">Lucíria Meury Rodrigues de Sousa</p>
                 <p className="text-[10px] text-pp-cream-dim">Administrador</p>
               </div>
             </div>
@@ -118,7 +127,7 @@ export default function AdminDashboard() {
               <h1 className="font-serif text-2xl lg:text-3xl font-light text-pp-cream">
                 Painel de <span className="font-semibold">Controlo</span>
               </h1>
-              <p className="text-pp-cream-dim text-sm mt-1">Bem-vinda de volta, Lucrécia</p>
+              <p className="text-pp-cream-dim text-sm mt-1">Bem-vinda de volta, Lucíria</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="relative hidden sm:block">

@@ -35,7 +35,7 @@
   }
 
   body {
-    @apply bg-pp-dark text-pp-cream font-sans antialiased;
+    @apply bg-pp-dark  text-pp-cream font-sans antialiased;;
     scroll-behavior: smooth;
   }
 
