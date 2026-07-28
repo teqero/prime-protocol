@@ -1,3 +1,4 @@
+import ScrollProgress from '../components/ScrollProgress';
 import Navbar from '../sections/Navbar';
 import Hero from '../sections/Hero';
 import Divider from '../sections/Divider';
@@ -11,12 +12,14 @@ import Gallery from '../sections/Gallery';
 import Testimonials from '../sections/Testimonials';
 import Partners from '../sections/Partners';
 import Founder from '../sections/Founder';
+import FAQ from '../sections/FAQ';
 import Contact from '../sections/Contact';
 import Footer from '../sections/Footer';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#0d0f14]">
+      <ScrollProgress />
       <Navbar />
       <Hero />
       <Divider />
@@ -37,6 +40,8 @@ export default function Home() {
       <Partners />
       <DividerAlt />
       <Founder />
+      <Divider />
+      <FAQ />
       <Divider />
       <Contact />
       <Footer />

@@ -1,3 +1,4 @@
+import ScrollReveal from '../components/ScrollReveal';
 import { Quote } from 'lucide-react';
 
 const testimonials = [
@@ -24,41 +25,44 @@ export default function Testimonials() {
       <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-[1px] bg-[#c9956b]" />
-            <span className="text-[10px] font-sans font-semibold tracking-[0.2em] uppercase text-[#c9956b]">
-              Testemunhos
-            </span>
-            <div className="w-12 h-[1px] bg-[#c9956b]" />
-          </div>
-          <h2 className="font-serif text-[48px] lg:text-[56px] font-normal text-[#f5f0e8] leading-[1.1]">
-            O Que Dizem os <span className="font-semibold">Nossos Clientes</span>
-          </h2>
+          <ScrollReveal>
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="w-12 h-[1px] bg-[#c9956b]" />
+              <span className="text-[10px] font-sans font-semibold tracking-[0.2em] uppercase text-[#c9956b]">
+                Testemunhos
+              </span>
+              <div className="w-12 h-[1px] bg-[#c9956b]" />
+            </div>
+          </ScrollReveal>
+          <ScrollReveal delay={100}>
+            <h2 className="font-serif text-[48px] lg:text-[56px] font-normal text-[#f5f0e8] leading-[1.1]">
+              O Que Dizem os <span className="font-semibold">Nossos Clientes</span>
+            </h2>
+          </ScrollReveal>
         </div>
 
         {/* Testimonials */}
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
-            <div
-              key={i}
-              className="bg-[#111318] border border-[#2a2520]/40 p-10 relative"
-            >
-              <Quote size={32} className="text-[#c9956b]/20 mb-6" />
-              <p className="text-[#8a7e74] font-sans leading-[1.7] mb-8 text-[14px]">
-                "{t.text}"
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-[#c9956b]/10 flex items-center justify-center">
-                  <span className="font-serif text-sm text-[#c9956b] font-semibold">
-                    {t.name.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-serif text-base font-semibold text-[#f5f0e8]">{t.name}</p>
-                  <p className="text-[11px] text-[#6b6560] font-sans">{t.role}</p>
+            <ScrollReveal key={i} delay={i * 150} direction="up">
+              <div className="bg-[#111318] border border-[#2a2520]/40 p-10 relative group hover:border-[#c9956b]/20 transition-colors duration-500 h-full">
+                <Quote size={32} className="text-[#c9956b]/20 mb-6 group-hover:text-[#c9956b]/30 transition-colors" />
+                <p className="text-[#8a7e74] font-sans leading-[1.7] mb-8 text-[14px]">
+                  "{t.text}"
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[#c9956b]/10 flex items-center justify-center">
+                    <span className="font-serif text-sm text-[#c9956b] font-semibold">
+                      {t.name.split(' ').map(n => n[0]).join('')}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-serif text-base font-semibold text-[#f5f0e8]">{t.name}</p>
+                    <p className="text-[11px] text-[#6b6560] font-sans">{t.role}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>
