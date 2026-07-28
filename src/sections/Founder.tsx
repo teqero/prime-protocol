@@ -11,7 +11,7 @@ export default function Founder() {
               <div className="absolute -top-3 -left-3 w-full h-full border border-[#c9956b]/20" />
               <img
                 src="/images/founder.jpg"
-                alt="Luciria Meury Rodrigues de Sousa"
+                alt="Lucíria Meury Rodrigues de Sousa"
                 className="w-full h-full object-cover relative z-10"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0f14]/40 via-transparent to-transparent z-10" />
@@ -28,14 +28,14 @@ export default function Founder() {
             </div>
 
             <h2 className="font-serif text-[42px] lg:text-[48px] font-normal text-[#f5f0e8] leading-[1.1] mb-1">
-              Luciria Meury
+              Lucíria Meury
             </h2>
             <h3 className="font-serif text-[28px] lg:text-[32px] font-semibold text-[#c9956b] mb-8">
               Rodrigues de Sousa
             </h3>
 
             <p className="text-[#8a7e74] font-sans text-[15px] leading-[1.7] mb-6">
-              Fundadora e Diretora Executiva da Prime Protocol, Luciria é uma
+              Fundadora e Diretora Executiva da Prime Protocol, Lucíria é uma
               profissional com vasta experiência em protocolo internacional e
               relações institucionais. Com formação em Relações Internacionais e
               especialização em Cerimonial e Protocolo, dedica-se a elevar os

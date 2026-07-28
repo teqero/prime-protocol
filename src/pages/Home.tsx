@@ -15,7 +15,9 @@ import Founder from '../sections/Founder';
 import FAQ from '../sections/FAQ';
 import Blog from '../sections/Blog';
 import ContactEnhanced from '../sections/ContactEnhanced';
+import Newsletter from '../sections/Newsletter';
 import Footer from '../sections/Footer';
+import WhatsAppWidget from '../components/WhatsAppWidget';
 
 export default function Home() {
   return (
@@ -47,7 +49,9 @@ export default function Home() {
       <FAQ />
       <Divider />
       <ContactEnhanced />
+      <Newsletter />
       <Footer />
+      <WhatsAppWidget />
     </div>
   );
 }

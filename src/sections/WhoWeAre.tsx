@@ -44,7 +44,7 @@ export default function WhoWeAre() {
             </p>
 
             <p className="text-[#6b6560] font-sans text-[14px] leading-[1.7] mb-10">
-              Sob a liderança da sua fundadora e CEO, Luciria Meury Rodrigues de Sousa, a Prime Protocol serve ministérios, embaixadas, corporações tecnológicas e organismos internacionais — transformando cada cerimónia, cada cimeira e cada evento de Estado numa demonstração de sofisticação e rigor absolutos.
+              Sob a liderança da sua fundadora e CEO, Lucíria Meury Rodrigues de Sousa, a Prime Protocol serve ministérios, embaixadas, corporações tecnológicas e organismos internacionais — transformando cada cerimónia, cada cimeira e cada evento de Estado numa demonstração de sofisticação e rigor absolutos.
             </p>
 
             {/* Quote box */}

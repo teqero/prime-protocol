@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
 import Particles from '../components/Particles';
+import Typewriter from '../components/Typewriter';
 
 export default function HeroParallax() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -69,7 +70,7 @@ export default function HeroParallax() {
                   Fundadora & CEO
                 </p>
                 <p className="font-serif text-[22px] font-normal text-[#c9956b]">
-                  Luciria Meury Rodrigues de Sousa
+                  Lucíria Meury Rodrigues de Sousa
                 </p>
               </div>
             </ScrollReveal>
@@ -86,10 +87,18 @@ export default function HeroParallax() {
             </ScrollReveal>
 
             <ScrollReveal delay={400}>
-              <p className="text-[#8a7e74] font-sans text-[15px] leading-[1.7] max-w-[520px] mb-10">
-                Excelência em protocolo, cerimonial e organização de eventos
-                executivos. Transformamos cada ocasião numa experiência
-                inesquecível de sofisticação e prestígio.
+              <p className="text-[#8a7e74] font-sans text-[15px] leading-[1.7] max-w-[520px] mb-10 min-h-[52px]">
+                <Typewriter
+                  texts={[
+                    'Excelência em protocolo corporativo e cerimonial diplomático.',
+                    'Transformamos cada ocasião numa experiência inesquecível.',
+                    'Eventos executivos com sofisticação e prestígio.',
+                    'Consultoria de protocolo para governos e empresas.',
+                  ]}
+                  speed={70}
+                  deleteSpeed={35}
+                  pause={2500}
+                />
               </p>
             </ScrollReveal>
 
@@ -139,7 +148,7 @@ export default function HeroParallax() {
                 <div className="absolute -inset-6 border border-[#c9956b]/10 hidden lg:block" />
                 <img
                   src="/images/hero-ceo.png"
-                  alt="Luciria Meury Rodrigues de Sousa - Fundadora & CEO"
+                  alt="Lucíria Meury Rodrigues de Sousa - Fundadora & CEO"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute -bottom-4 -left-4 bg-[#111318] border border-[#2a2520] px-5 py-3 hidden lg:block">
