@@ -20,10 +20,10 @@ export default function Footer() {
 
   return (
     <footer className="w-full bg-[#0d0f14] border-t border-[#2a2520]/30">
-      <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20 py-16 lg:py-20">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+      <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20 py-12 md:py-16 lg:py-20">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-8 mb-12 lg:mb-16">
           {/* Brand */}
-          <div className="lg:col-span-1">
+          <div className="col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full border border-[#c9956b]/40 flex items-center justify-center">
                 <img src="/images/logo.png" alt="Prime Protocol" className="w-6 h-6 object-contain" />
@@ -74,7 +74,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-[#2a2520]/20 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[#6b6560] font-sans text-[11px]">
-            © 2024 Prime Protocol. Todos os direitos reservados.
+            © {new Date().getFullYear()} Prime Protocol. Todos os direitos reservados.
           </p>
           <button
             onClick={scrollToTop}
