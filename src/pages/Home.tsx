@@ -1,6 +1,6 @@
 import ScrollProgress from '../components/ScrollProgress';
 import Navbar from '../sections/Navbar';
-import Hero from '../sections/Hero';
+import HeroParallax from '../sections/HeroParallax';
 import Divider from '../sections/Divider';
 import DividerAlt from '../sections/DividerAlt';
 import About from '../sections/About';
@@ -8,12 +8,13 @@ import WhoWeAre from '../sections/WhoWeAre';
 import MVV from '../sections/MVV';
 import Services from '../sections/Services';
 import WhyChoose from '../sections/WhyChoose';
-import Gallery from '../sections/Gallery';
+import GalleryCarousel from '../sections/GalleryCarousel';
 import Testimonials from '../sections/Testimonials';
 import Partners from '../sections/Partners';
 import Founder from '../sections/Founder';
 import FAQ from '../sections/FAQ';
-import Contact from '../sections/Contact';
+import Blog from '../sections/Blog';
+import ContactEnhanced from '../sections/ContactEnhanced';
 import Footer from '../sections/Footer';
 
 export default function Home() {
@@ -21,7 +22,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#0d0f14]">
       <ScrollProgress />
       <Navbar />
-      <Hero />
+      <HeroParallax />
       <Divider />
       <About />
       <Divider />
@@ -33,7 +34,7 @@ export default function Home() {
       <DividerAlt />
       <WhyChoose />
       <Divider />
-      <Gallery />
+      <GalleryCarousel />
       <DividerAlt />
       <Testimonials />
       <Divider />
@@ -41,9 +42,11 @@ export default function Home() {
       <DividerAlt />
       <Founder />
       <Divider />
+      <Blog />
+      <Divider />
       <FAQ />
       <Divider />
-      <Contact />
+      <ContactEnhanced />
       <Footer />
     </div>
   );
