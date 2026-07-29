@@ -1,6 +1,6 @@
 import ScrollReveal from '../components/ScrollReveal';
 import {
-  PartyPopper, Mic, Shield, Building2, Plane, GraduationCap
+  PartyPopper, Mic, Shield, Building2, Plane, GraduationCap, ArrowRight
 } from 'lucide-react';
 
 const services = [
@@ -48,6 +48,11 @@ const services = [
   },
 ];
 
+function scrollToContact() {
+  const el = document.getElementById('contact');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 export default function Services() {
   return (
     <section id="services" className="w-full bg-[#111318] py-24 lg:py-32">
@@ -82,7 +87,7 @@ export default function Services() {
         <div className="grid md:grid-cols-2 gap-[1px] bg-[#2a2520]/30">
           {services.map((service, i) => (
             <ScrollReveal key={service.number} delay={i * 100} direction={i % 2 === 0 ? 'left' : 'right'}>
-              <div className="bg-[#111318] p-10 lg:p-12 group hover:bg-[#0d0f14] transition-all duration-500 h-full">
+              <div className="bg-[#111318] p-10 lg:p-12 group hover:bg-[#0d0f14] transition-all duration-500 h-full flex flex-col">
                 <div className="flex items-start justify-between mb-8">
                   <span className="text-[10px] font-sans text-[#c9956b] tracking-[0.2em]">
                     {service.number}
@@ -96,9 +101,17 @@ export default function Services() {
                   {service.title}
                 </h3>
 
-                <p className="text-[#6b6560] font-sans text-[13px] leading-[1.7]">
+                <p className="text-[#6b6560] font-sans text-[13px] leading-[1.7] mb-6 flex-1">
                   {service.description}
                 </p>
+
+                <button
+                  onClick={scrollToContact}
+                  className="inline-flex items-center gap-2 text-[#c9956b] font-sans text-[11px] tracking-[0.1em] uppercase group-hover:gap-3 transition-all duration-300 bg-transparent border-none cursor-pointer self-start"
+                >
+                  Solicitar Orçamento
+                  <ArrowRight size={14} />
+                </button>
               </div>
             </ScrollReveal>
           ))}

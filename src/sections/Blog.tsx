@@ -1,4 +1,5 @@
-import { Calendar, ArrowUpRight, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, ArrowUpRight, Clock, X } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 
 const articles = [
@@ -29,8 +30,26 @@ const articles = [
 ];
 
 export default function Blog() {
+  const [comingSoon, setComingSoon] = useState(false);
+
+  const showComingSoon = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setComingSoon(true);
+    setTimeout(() => setComingSoon(false), 2500);
+  };
+
   return (
-    <section id="blog" className="w-full bg-[#0d0f14] py-24 lg:py-32">
+    <section id="blog" className="w-full bg-[#0d0f14] py-24 lg:py-32 relative">
+      {/* Coming Soon Toast */}
+      {comingSoon && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-[#c9956b] text-[#0d0f14] px-6 py-3 font-sans text-sm font-semibold tracking-wide shadow-lg animate-in fade-in slide-in-from-top-4 duration-300 flex items-center gap-3">
+          <span>Em breve — Novos artigos em preparação</span>
+          <button onClick={() => setComingSoon(false)} className="hover:opacity-70">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-16">
@@ -50,13 +69,13 @@ export default function Blog() {
             </ScrollReveal>
           </div>
           <ScrollReveal delay={200}>
-            <a
-              href="#"
-              className="inline-flex items-center gap-2 text-[#c9956b] font-sans text-[12px] tracking-[0.15em] uppercase hover:text-[#d4a87a] transition-colors mt-6 lg:mt-0 group"
+            <button
+              onClick={showComingSoon}
+              className="inline-flex items-center gap-2 text-[#c9956b] font-sans text-[12px] tracking-[0.15em] uppercase hover:text-[#d4a87a] transition-colors mt-6 lg:mt-0 group bg-transparent border-none cursor-pointer"
             >
               Ver Todos os Artigos
               <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </a>
+            </button>
           </ScrollReveal>
         </div>
 
@@ -100,13 +119,13 @@ export default function Blog() {
                     {article.excerpt}
                   </p>
 
-                  <a
-                    href="#"
-                    className="inline-flex items-center gap-1.5 text-[#c9956b] font-sans text-[11px] tracking-[0.1em] uppercase group-hover:gap-2.5 transition-all duration-300"
+                  <button
+                    onClick={showComingSoon}
+                    className="inline-flex items-center gap-1.5 text-[#c9956b] font-sans text-[11px] tracking-[0.1em] uppercase group-hover:gap-2.5 transition-all duration-300 bg-transparent border-none cursor-pointer"
                   >
                     Ler Mais
                     <ArrowUpRight size={12} />
-                  </a>
+                  </button>
                 </div>
               </article>
             </ScrollReveal>

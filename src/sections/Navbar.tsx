@@ -11,6 +11,14 @@ const navLinks = [
   { label: 'Contactos', href: '#contact' },
 ];
 
+function scrollToSection(href: string) {
+  const id = href.replace('#', '');
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -20,6 +28,12 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    scrollToSection(href);
+    setMobileOpen(false);
+  };
 
   return (
     <header
@@ -32,7 +46,11 @@ export default function Navbar() {
       <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
         <nav className="flex items-center justify-between h-[120px]">
           {/* Logo */}
-          <a href="#hero" className="flex items-center gap-3 group">
+          <a
+            href="#hero"
+            onClick={(e) => handleNavClick(e, '#hero')}
+            className="flex items-center gap-3 group"
+          >
             <div className="w-16 h-16 rounded-full border border-[#c9956b]/40 flex items-center justify-center">
               <Logo size={44} />
             </div>
@@ -53,6 +71,7 @@ export default function Navbar() {
                 <li key={link.href}>
                   <a
                     href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
                     className="text-[11px] font-sans font-medium tracking-[0.15em] uppercase text-[#b8b0a4] hover:text-[#f5f0e8] transition-colors duration-300"
                   >
                     {link.label}
@@ -66,6 +85,7 @@ export default function Navbar() {
               <ThemeToggle />
               <a
                 href="#contact"
+                onClick={(e) => handleNavClick(e, '#contact')}
                 className="inline-flex items-center justify-center px-7 py-2.5 bg-[#c9956b] text-[#0d0f14] font-sans font-semibold text-[11px] tracking-wider uppercase hover:bg-[#d4a87a] transition-all duration-300"
               >
                 Agendar
@@ -95,7 +115,7 @@ export default function Navbar() {
               <li key={link.href}>
                 <a
                   href={link.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={(e) => handleNavClick(e, link.href)}
                   className="block text-sm font-sans font-medium tracking-[0.15em] uppercase text-[#b8b0a4] hover:text-[#f5f0e8] transition-colors py-2"
                 >
                   {link.label}
@@ -109,7 +129,7 @@ export default function Navbar() {
           </div>
           <a
             href="#contact"
-            onClick={() => setMobileOpen(false)}
+            onClick={(e) => handleNavClick(e, '#contact')}
             className="inline-flex items-center justify-center px-7 py-2.5 bg-[#c9956b] text-[#0d0f14] font-sans font-semibold text-[11px] tracking-wider uppercase hover:bg-[#d4a87a] transition-all mt-6 w-full"
           >
             Agendar

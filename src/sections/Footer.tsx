@@ -1,30 +1,31 @@
-import { ArrowUp } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowUp, X } from 'lucide-react';
 
 const footerLinks = [
   {
     title: 'Empresa',
     links: [
-      { label: 'Sobre Nós', href: '#about' },
-      { label: 'Equipa', href: '#founder' },
-      { label: 'Serviços', href: '#services' },
-      { label: 'Contactos', href: '#contact' },
+      { label: 'Sobre Nós', href: '#about', scroll: true },
+      { label: 'Equipa', href: '#founder', scroll: true },
+      { label: 'Serviços', href: '#services', scroll: true },
+      { label: 'Contactos', href: '#contact', scroll: true },
     ],
   },
   {
     title: 'Serviços',
     links: [
-      { label: 'Eventos Corporativos', href: '#services' },
-      { label: 'Cerimonial', href: '#services' },
-      { label: 'Protocolo Diplomático', href: '#services' },
-      { label: 'Formação', href: '#services' },
+      { label: 'Eventos Corporativos', href: '#services', scroll: true },
+      { label: 'Cerimonial', href: '#services', scroll: true },
+      { label: 'Protocolo Diplomático', href: '#services', scroll: true },
+      { label: 'Formação', href: '#services', scroll: true },
     ],
   },
   {
     title: 'Legal',
     links: [
-      { label: 'Termos de Uso', href: '#' },
-      { label: 'Política de Privacidade', href: '#' },
-      { label: 'Cookies', href: '#' },
+      { label: 'Termos de Uso', href: '#', legal: true },
+      { label: 'Política de Privacidade', href: '#', legal: true },
+      { label: 'Cookies', href: '#', legal: true },
     ],
   },
 ];
@@ -35,11 +36,41 @@ const socialLinks = [
   { label: 'Facebook', href: 'https://www.facebook.com/primeprotocol.ao', abbr: 'fb' },
 ];
 
+function scrollToSection(href: string) {
+  const id = href.replace('#', '');
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 export default function Footer() {
+  const [comingSoon, setComingSoon] = useState(false);
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  const handleLinkClick = (e: React.MouseEvent, link: { href: string; scroll?: boolean; legal?: boolean }) => {
+    if (link.legal) {
+      e.preventDefault();
+      setComingSoon(true);
+      setTimeout(() => setComingSoon(false), 2500);
+    } else if (link.scroll) {
+      e.preventDefault();
+      scrollToSection(link.href);
+    }
+  };
+
   return (
-    <footer className="w-full bg-[#0d0f14] border-t border-[#2a2520]/30">
+    <footer className="w-full bg-[#0d0f14] border-t border-[#2a2520]/30 relative">
+      {/* Coming Soon Toast */}
+      {comingSoon && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-[#c9956b] text-[#0d0f14] px-6 py-3 font-sans text-sm font-semibold tracking-wide shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-300 flex items-center gap-3">
+          <span>Em breve — Documento em preparação</span>
+          <button onClick={() => setComingSoon(false)} className="hover:opacity-70">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20 py-12 md:py-16 lg:py-20">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-8 mb-12 lg:mb-16">
           {/* Brand */}
@@ -83,6 +114,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
+                      onClick={(e) => handleLinkClick(e, link)}
                       className="text-[#6b6560] font-sans text-[13px] hover:text-[#c9956b] transition-colors"
                     >
                       {link.label}

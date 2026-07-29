@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Calendar, Users, BarChart3, Settings, Bell, Search, Menu, X,
   TrendingUp, TrendingDown, DollarSign, Briefcase, CheckCircle, Clock, AlertCircle,
-  ArrowLeft, LogOut,
+  ArrowLeft, LogOut, Plus, FileText, X as XIcon,
 } from 'lucide-react';
 import { supabase, adminLogout } from '../lib/supabase';
 import Logo from '../components/Logo';
@@ -13,11 +13,17 @@ type Contact = { id: string; name: string; email: string; service: string; statu
 
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [events, setEvents] = useState<Event[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [stats, setStats] = useState({ eventsMonth: 24, revenue: '4.2M', activeClients: 48, completionRate: '96%' });
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<string | null>(null);
+  const [showNewEventModal, setShowNewEventModal] = useState(false);
+  const [showNewClientModal, setShowNewClientModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -26,14 +32,16 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [eventsRes, tasksRes, contactsRes] = await Promise.all([
+      const [eventsRes, tasksRes, contactsRes, allContactsRes] = await Promise.all([
         supabase.from('events').select('*').order('event_date', { ascending: false }),
         supabase.from('tasks').select('*').order('created_at', { ascending: false }),
         supabase.from('contacts').select('*').order('created_at', { ascending: false }).limit(5),
+        supabase.from('contacts').select('*').order('created_at', { ascending: false }),
       ]);
       if (eventsRes.data) setEvents(eventsRes.data);
       if (tasksRes.data) setTasks(tasksRes.data);
       if (contactsRes.data) setContacts(contactsRes.data);
+      if (allContactsRes.data) setAllContacts(allContactsRes.data);
 
       const confirmed = eventsRes.data?.filter((e: Event) => e.status === 'confirmed').length || 0;
       const completed = eventsRes.data?.filter((e: Event) => e.status === 'completed').length || 0;
@@ -57,6 +65,11 @@ export default function AdminDashboard() {
     window.location.href = '/login';
   };
 
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const statCards = [
     { label: 'Eventos do Mês', value: stats.eventsMonth.toString(), change: '+12%', up: true, icon: Calendar },
     { label: 'Receita (AOA)', value: stats.revenue, change: '+8%', up: true, icon: DollarSign },
@@ -68,8 +81,59 @@ export default function AdminDashboard() {
   const getStatusText = (s: string) => ({ confirmed: 'text-green-400', completed: 'text-pp-gold', pending: 'text-yellow-400', cancelled: 'text-red-400' })[s] || 'text-gray-400';
   const getPriority = (p: string) => ({ high: 'bg-red-500/10 text-red-400', medium: 'bg-yellow-500/10 text-yellow-400' })[p] || 'bg-green-500/10 text-green-400';
 
+  const navItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard' },
+    { icon: Calendar, label: 'Eventos', id: 'events' },
+    { icon: Users, label: 'Clientes', id: 'clients' },
+    { icon: BarChart3, label: 'Relatórios', id: 'reports' },
+    { icon: Settings, label: 'Configurações', id: 'settings' },
+  ];
+
+  const filteredEvents = events.filter(e => e.name.toLowerCase().includes(searchQuery.toLowerCase()) || e.client.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredContacts = allContacts.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()));
+
   return (
     <div className="min-h-screen bg-pp-dark-2 text-pp-cream font-sans">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-[70] bg-pp-gold text-pp-dark px-5 py-3 font-sans text-sm font-semibold shadow-lg flex items-center gap-3">
+          <span>{toast}</span>
+          <button onClick={() => setToast(null)}><XIcon size={14} /></button>
+        </div>
+      )}
+
+      {/* New Event Modal */}
+      {showNewEventModal && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-pp-dark border border-pp-border/30 w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-serif text-lg font-semibold text-pp-cream">Novo Evento</h3>
+              <button onClick={() => setShowNewEventModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
+            </div>
+            <p className="text-pp-cream-dim text-sm mb-4">Funcionalidade em desenvolvimento. Em breve poderá criar eventos directamente no painel.</p>
+            <button onClick={() => { setShowNewEventModal(false); showToast('Funcionalidade em desenvolvimento'); }} className="w-full py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* New Client Modal */}
+      {showNewClientModal && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-pp-dark border border-pp-border/30 w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-serif text-lg font-semibold text-pp-cream">Novo Cliente</h3>
+              <button onClick={() => setShowNewClientModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
+            </div>
+            <p className="text-pp-cream-dim text-sm mb-4">Funcionalidade em desenvolvimento. Em breve poderá adicionar clientes directamente no painel.</p>
+            <button onClick={() => { setShowNewClientModal(false); showToast('Funcionalidade em desenvolvimento'); }} className="w-full py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-pp-dark border-b border-pp-border/20 flex items-center justify-between px-4 z-50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full border border-pp-gold/40 flex items-center justify-center">
@@ -95,8 +159,12 @@ export default function AdminDashboard() {
           </div>
 
           <nav className="p-4 space-y-1">
-            {[{ icon: LayoutDashboard, label: 'Dashboard', active: true }, { icon: Calendar, label: 'Eventos', active: false }, { icon: Users, label: 'Clientes', active: false }, { icon: BarChart3, label: 'Relatórios', active: false }, { icon: Settings, label: 'Configurações', active: false }].map((item) => (
-              <button key={item.label} className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors ${item.active ? 'bg-pp-gold/10 text-pp-gold' : 'text-pp-cream-muted hover:bg-pp-dark-3 hover:text-pp-cream'}`}>
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-pp-gold/10 text-pp-gold' : 'text-pp-cream-muted hover:bg-pp-dark-3 hover:text-pp-cream'}`}
+              >
                 <item.icon size={18} /> {item.label}
               </button>
             ))}
@@ -122,15 +190,35 @@ export default function AdminDashboard() {
         </aside>
 
         <main className="flex-1 min-w-0 p-6 lg:p-10">
+          {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="font-serif text-2xl lg:text-3xl font-light text-pp-cream">Painel de <span className="font-semibold">Controlo</span></h1>
+              <h1 className="font-serif text-2xl lg:text-3xl font-light text-pp-cream">
+                {activeTab === 'dashboard' && 'Painel de '}
+                {activeTab === 'events' && 'Gestão de '}
+                {activeTab === 'clients' && 'Gestão de '}
+                {activeTab === 'reports' && 'Relatórios '}
+                {activeTab === 'settings' && 'Configurações '}
+                <span className="font-semibold">
+                  {activeTab === 'dashboard' && 'Controlo'}
+                  {activeTab === 'events' && 'Eventos'}
+                  {activeTab === 'clients' && 'Clientes'}
+                  {activeTab === 'reports' && 'e Estatísticas'}
+                  {activeTab === 'settings' && 'do Sistema'}
+                </span>
+              </h1>
               <p className="text-pp-cream-dim text-sm mt-1">Bem-vinda de volta, Lucíria</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="relative hidden sm:block">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-pp-cream-dim" />
-                <input type="text" placeholder="Pesquisar..." className="bg-pp-dark-3 border border-pp-border/30 rounded-sm pl-9 pr-4 py-2 text-sm text-pp-cream placeholder:text-pp-cream-dim/50 focus:border-pp-gold/50 focus:outline-none w-64" />
+                <input
+                  type="text"
+                  placeholder="Pesquisar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-pp-dark-3 border border-pp-border/30 rounded-sm pl-9 pr-4 py-2 text-sm text-pp-cream placeholder:text-pp-cream-dim/50 focus:border-pp-gold/50 focus:outline-none w-64"
+                />
               </div>
               <button className="w-10 h-10 rounded-sm bg-pp-dark-3 border border-pp-border/30 flex items-center justify-center text-pp-cream-dim hover:text-pp-gold relative">
                 <Bell size={18} />
@@ -139,111 +227,288 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {statCards.map((stat, i) => (
-              <div key={i} className="card-dark p-5">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-10 h-10 rounded-sm bg-pp-gold/10 flex items-center justify-center"><stat.icon size={18} className="text-pp-gold" /></div>
-                  <div className={`flex items-center gap-1 text-xs ${stat.up ? 'text-green-400' : 'text-red-400'}`}>
-                    {stat.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}{stat.change}
+          {/* ===== DASHBOARD TAB ===== */}
+          {activeTab === 'dashboard' && (
+            <>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {statCards.map((stat, i) => (
+                  <div key={i} className="card-dark p-5">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-10 h-10 rounded-sm bg-pp-gold/10 flex items-center justify-center"><stat.icon size={18} className="text-pp-gold" /></div>
+                      <div className={`flex items-center gap-1 text-xs ${stat.up ? 'text-green-400' : 'text-red-400'}`}>
+                        {stat.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}{stat.change}
+                      </div>
+                    </div>
+                    <p className="font-serif text-2xl font-semibold text-pp-cream">{stat.value}</p>
+                    <p className="text-xs text-pp-cream-dim font-sans mt-1">{stat.label}</p>
                   </div>
-                </div>
-                <p className="font-serif text-2xl font-semibold text-pp-cream">{stat.value}</p>
-                <p className="text-xs text-pp-cream-dim font-sans mt-1">{stat.label}</p>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div className="grid lg:grid-cols-2 gap-6 mb-8">
+              <div className="grid lg:grid-cols-2 gap-6 mb-8">
+                <div className="card-dark p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-serif text-lg font-semibold text-pp-cream">Eventos Recentes</h3>
+                    <button onClick={() => setActiveTab('events')} className="text-xs text-pp-gold hover:text-pp-gold-light transition-colors">Ver todos</button>
+                  </div>
+                  {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : events.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">Sem eventos</div> : (
+                    <div className="space-y-3">
+                      {events.slice(0, 5).map((event) => (
+                        <div key={event.id} className="flex items-center justify-between p-3 rounded-sm bg-pp-dark-3/50 hover:bg-pp-dark-3 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-2 h-2 rounded-full ${getStatusColor(event.status)}`} />
+                            <div>
+                              <p className="text-sm font-medium text-pp-cream">{event.name}</p>
+                              <p className="text-[10px] text-pp-cream-dim">{event.client} · {event.event_type}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-pp-cream-muted">{event.event_date}</p>
+                            <span className={`text-[10px] uppercase tracking-wider ${getStatusText(event.status)}`}>{event.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="card-dark p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-serif text-lg font-semibold text-pp-cream">Tarefas Pendentes</h3>
+                    <button onClick={() => showToast('Gestão de tarefas em desenvolvimento')} className="text-xs text-pp-gold hover:text-pp-gold-light transition-colors">Ver todas</button>
+                  </div>
+                  {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : tasks.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">Sem tarefas</div> : (
+                    <div className="space-y-3">
+                      {tasks.map((task) => (
+                        <div key={task.id} className="flex items-start gap-3 p-3 rounded-sm bg-pp-dark-3/50 hover:bg-pp-dark-3 transition-colors">
+                          <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 ${getPriority(task.priority).split(' ')[0]}`}>
+                            {task.priority === 'high' ? <AlertCircle size={14} className="text-red-400" /> : task.priority === 'medium' ? <Clock size={14} className="text-yellow-400" /> : <CheckCircle size={14} className="text-green-400" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-pp-cream truncate">{task.task}</p>
+                            <p className="text-[10px] text-pp-cream-dim mt-0.5">Prazo: {task.deadline}</p>
+                          </div>
+                          <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm ${getPriority(task.priority)}`}>{task.priority}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="card-dark p-6 mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-serif text-lg font-semibold text-pp-cream">Contactos Recentes</h3>
+                  <button onClick={() => setActiveTab('clients')} className="text-xs text-pp-gold hover:text-pp-gold-light transition-colors">Ver todos</button>
+                </div>
+                {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : contacts.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">Sem contactos</div> : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
+                          <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Email</th><th className="pb-3 font-medium">Serviço</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-sm">
+                        {contacts.map((c) => (
+                          <tr key={c.id} className="border-b border-pp-border/10 hover:bg-pp-dark-3/30 transition-colors">
+                            <td className="py-3 text-pp-cream">{c.name}</td>
+                            <td className="py-3 text-pp-cream-muted">{c.email}</td>
+                            <td className="py-3 text-pp-cream-muted capitalize">{c.service || '-'}</td>
+                            <td className="py-3 text-pp-cream-muted">{new Date(c.created_at).toLocaleDateString('pt-AO')}</td>
+                            <td className="py-3">
+                              <span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${c.status === 'new' ? 'bg-yellow-500/10 text-yellow-400' : c.status === 'read' ? 'bg-blue-500/10 text-blue-400' : c.status === 'replied' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}`}>{c.status}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div className="card-dark p-6">
+                <h3 className="font-serif text-lg font-semibold text-pp-cream mb-4">Ações Rápidas</h3>
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <button onClick={() => setShowNewEventModal(true)} className="flex items-center gap-3 p-4 bg-pp-dark-3 rounded-sm hover:bg-pp-gold/10 transition-colors border border-pp-border/20 hover:border-pp-gold/30 cursor-pointer"><Calendar size={20} className="text-pp-gold" /><span className="text-sm font-medium text-pp-cream">Novo Evento</span></button>
+                  <button onClick={() => setShowNewClientModal(true)} className="flex items-center gap-3 p-4 bg-pp-dark-3 rounded-sm hover:bg-pp-gold/10 transition-colors border border-pp-border/20 hover:border-pp-gold/30 cursor-pointer"><Briefcase size={20} className="text-pp-gold" /><span className="text-sm font-medium text-pp-cream">Novo Cliente</span></button>
+                  <button onClick={() => { setActiveTab('reports'); showToast('A gerar relatório...'); }} className="flex items-center gap-3 p-4 bg-pp-dark-3 rounded-sm hover:bg-pp-gold/10 transition-colors border border-pp-border/20 hover:border-pp-gold/30 cursor-pointer"><BarChart3 size={20} className="text-pp-gold" /><span className="text-sm font-medium text-pp-cream">Gerar Relatório</span></button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ===== EVENTS TAB ===== */}
+          {activeTab === 'events' && (
             <div className="card-dark p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-serif text-lg font-semibold text-pp-cream">Eventos Recentes</h3>
-                <button className="text-xs text-pp-gold hover:text-pp-gold-light transition-colors">Ver todos</button>
+                <h3 className="font-serif text-lg font-semibold text-pp-cream">Todos os Eventos</h3>
+                <button onClick={() => setShowNewEventModal(true)} className="flex items-center gap-2 px-4 py-2 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">
+                  <Plus size={14} /> Novo Evento
+                </button>
               </div>
-              {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : events.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">Sem eventos</div> : (
-                <div className="space-y-3">
-                  {events.slice(0, 5).map((event) => (
-                    <div key={event.id} className="flex items-center justify-between p-3 rounded-sm bg-pp-dark-3/50 hover:bg-pp-dark-3 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${getStatusColor(event.status)}`} />
-                        <div>
-                          <p className="text-sm font-medium text-pp-cream">{event.name}</p>
-                          <p className="text-[10px] text-pp-cream-dim">{event.client} · {event.event_type}</p>
+              {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : filteredEvents.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">{searchQuery ? 'Nenhum evento encontrado' : 'Sem eventos'}</div> : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
+                        <th className="pb-3 font-medium">Nome</th>
+                        <th className="pb-3 font-medium">Cliente</th>
+                        <th className="pb-3 font-medium">Tipo</th>
+                        <th className="pb-3 font-medium">Data</th>
+                        <th className="pb-3 font-medium">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm">
+                      {filteredEvents.map((e) => (
+                        <tr key={e.id} className="border-b border-pp-border/10 hover:bg-pp-dark-3/30 transition-colors">
+                          <td className="py-3 text-pp-cream">{e.name}</td>
+                          <td className="py-3 text-pp-cream-muted">{e.client}</td>
+                          <td className="py-3 text-pp-cream-muted capitalize">{e.event_type}</td>
+                          <td className="py-3 text-pp-cream-muted">{e.event_date}</td>
+                          <td className="py-3">
+                            <span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${getStatusText(e.status).replace('text-', 'bg-').replace('400', '500/10 text-')}`}>{e.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===== CLIENTS TAB ===== */}
+          {activeTab === 'clients' && (
+            <div className="card-dark p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-serif text-lg font-semibold text-pp-cream">Todos os Contactos</h3>
+                <button onClick={() => setShowNewClientModal(true)} className="flex items-center gap-2 px-4 py-2 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">
+                  <Plus size={14} /> Novo Contacto
+                </button>
+              </div>
+              {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : filteredContacts.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">{searchQuery ? 'Nenhum contacto encontrado' : 'Sem contactos'}</div> : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
+                        <th className="pb-3 font-medium">Nome</th>
+                        <th className="pb-3 font-medium">Email</th>
+                        <th className="pb-3 font-medium">Serviço</th>
+                        <th className="pb-3 font-medium">Data</th>
+                        <th className="pb-3 font-medium">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm">
+                      {filteredContacts.map((c) => (
+                        <tr key={c.id} className="border-b border-pp-border/10 hover:bg-pp-dark-3/30 transition-colors">
+                          <td className="py-3 text-pp-cream">{c.name}</td>
+                          <td className="py-3 text-pp-cream-muted">{c.email}</td>
+                          <td className="py-3 text-pp-cream-muted capitalize">{c.service || '-'}</td>
+                          <td className="py-3 text-pp-cream-muted">{new Date(c.created_at).toLocaleDateString('pt-AO')}</td>
+                          <td className="py-3">
+                            <span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${c.status === 'new' ? 'bg-yellow-500/10 text-yellow-400' : c.status === 'read' ? 'bg-blue-500/10 text-blue-400' : c.status === 'replied' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}`}>{c.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===== REPORTS TAB ===== */}
+          {activeTab === 'reports' && (
+            <div className="space-y-6">
+              <div className="card-dark p-6">
+                <h3 className="font-serif text-lg font-semibold text-pp-cream mb-4">Resumo Estatístico</h3>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {statCards.map((stat, i) => (
+                    <div key={i} className="bg-pp-dark-3/50 p-5 rounded-sm">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="w-8 h-8 rounded-sm bg-pp-gold/10 flex items-center justify-center"><stat.icon size={16} className="text-pp-gold" /></div>
+                        <div className={`flex items-center gap-1 text-[10px] ${stat.up ? 'text-green-400' : 'text-red-400'}`}>
+                          {stat.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}{stat.change}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs text-pp-cream-muted">{event.event_date}</p>
-                        <span className={`text-[10px] uppercase tracking-wider ${getStatusText(event.status)}`}>{event.status}</span>
-                      </div>
+                      <p className="font-serif text-xl font-semibold text-pp-cream">{stat.value}</p>
+                      <p className="text-[10px] text-pp-cream-dim font-sans mt-1">{stat.label}</p>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-
-            <div className="card-dark p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-serif text-lg font-semibold text-pp-cream">Tarefas Pendentes</h3>
-                <button className="text-xs text-pp-gold hover:text-pp-gold-light transition-colors">Ver todas</button>
               </div>
-              {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : tasks.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">Sem tarefas</div> : (
+              <div className="card-dark p-6">
+                <h3 className="font-serif text-lg font-semibold text-pp-cream mb-4">Relatórios Disponíveis</h3>
                 <div className="space-y-3">
-                  {tasks.map((task) => (
-                    <div key={task.id} className="flex items-start gap-3 p-3 rounded-sm bg-pp-dark-3/50 hover:bg-pp-dark-3 transition-colors">
-                      <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 ${getPriority(task.priority).split(' ')[0]}`}>
-                        {task.priority === 'high' ? <AlertCircle size={14} className="text-red-400" /> : task.priority === 'medium' ? <Clock size={14} className="text-yellow-400" /> : <CheckCircle size={14} className="text-green-400" />}
+                  {[
+                    { label: 'Relatório de Eventos do Mês', desc: 'Resumo de todos os eventos realizados e agendados' },
+                    { label: 'Relatório de Contactos', desc: 'Análise de leads e conversões de contactos' },
+                    { label: 'Relatório Financeiro', desc: 'Receitas e despesas do período' },
+                  ].map((r) => (
+                    <div key={r.label} className="flex items-center justify-between p-4 bg-pp-dark-3/50 rounded-sm hover:bg-pp-dark-3 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <FileText size={18} className="text-pp-gold" />
+                        <div>
+                          <p className="text-sm font-medium text-pp-cream">{r.label}</p>
+                          <p className="text-[10px] text-pp-cream-dim">{r.desc}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-pp-cream truncate">{task.task}</p>
-                        <p className="text-[10px] text-pp-cream-dim mt-0.5">Prazo: {task.deadline}</p>
-                      </div>
-                      <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm ${getPriority(task.priority)}`}>{task.priority}</span>
+                      <button onClick={() => showToast(`A gerar: ${r.label}`)} className="px-4 py-1.5 bg-pp-gold/10 text-pp-gold text-[10px] tracking-wider uppercase hover:bg-pp-gold/20 transition-all">
+                        Gerar
+                      </button>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
-
-          <div className="card-dark p-6 mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-serif text-lg font-semibold text-pp-cream">Contactos Recentes</h3>
-              <button className="text-xs text-pp-gold hover:text-pp-gold-light transition-colors">Ver todos</button>
-            </div>
-            {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : contacts.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">Sem contactos</div> : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
-                      <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Email</th><th className="pb-3 font-medium">Serviço</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm">
-                    {contacts.map((c) => (
-                      <tr key={c.id} className="border-b border-pp-border/10 hover:bg-pp-dark-3/30 transition-colors">
-                        <td className="py-3 text-pp-cream">{c.name}</td>
-                        <td className="py-3 text-pp-cream-muted">{c.email}</td>
-                        <td className="py-3 text-pp-cream-muted capitalize">{c.service || '-'}</td>
-                        <td className="py-3 text-pp-cream-muted">{new Date(c.created_at).toLocaleDateString('pt-AO')}</td>
-                        <td className="py-3">
-                          <span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${c.status === 'new' ? 'bg-yellow-500/10 text-yellow-400' : c.status === 'read' ? 'bg-blue-500/10 text-blue-400' : c.status === 'replied' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}`}>{c.status}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
-            )}
-          </div>
-
-          <div className="card-dark p-6">
-            <h3 className="font-serif text-lg font-semibold text-pp-cream mb-4">Ações Rápidas</h3>
-            <div className="grid sm:grid-cols-3 gap-4">
-              <button className="flex items-center gap-3 p-4 bg-pp-dark-3 rounded-sm hover:bg-pp-gold/10 transition-colors border border-pp-border/20 hover:border-pp-gold/30"><Calendar size={20} className="text-pp-gold" /><span className="text-sm font-medium text-pp-cream">Novo Evento</span></button>
-              <button className="flex items-center gap-3 p-4 bg-pp-dark-3 rounded-sm hover:bg-pp-gold/10 transition-colors border border-pp-border/20 hover:border-pp-gold/30"><Briefcase size={20} className="text-pp-gold" /><span className="text-sm font-medium text-pp-cream">Novo Cliente</span></button>
-              <button className="flex items-center gap-3 p-4 bg-pp-dark-3 rounded-sm hover:bg-pp-gold/10 transition-colors border border-pp-border/20 hover:border-pp-gold/30"><BarChart3 size={20} className="text-pp-gold" /><span className="text-sm font-medium text-pp-cream">Gerar Relatório</span></button>
             </div>
-          </div>
+          )}
+
+          {/* ===== SETTINGS TAB ===== */}
+          {activeTab === 'settings' && (
+            <div className="space-y-6 max-w-2xl">
+              <div className="card-dark p-6">
+                <h3 className="font-serif text-lg font-semibold text-pp-cream mb-6">Informações da Conta</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Nome</label>
+                    <input type="text" value="Lucíria Meury Rodrigues de Sousa" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Email</label>
+                    <input type="text" value="admin@primeprotocol.ao" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Cargo</label>
+                    <input type="text" value="Fundadora & CEO / Administrador" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" />
+                  </div>
+                </div>
+              </div>
+              <div className="card-dark p-6">
+                <h3 className="font-serif text-lg font-semibold text-pp-cream mb-6">Preferências do Sistema</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-b border-pp-border/10">
+                    <div>
+                      <p className="text-sm text-pp-cream">Notificações por Email</p>
+                      <p className="text-[10px] text-pp-cream-dim">Receber alertas quando novos contactos chegam</p>
+                    </div>
+                    <button onClick={() => showToast('Preferência actualizada')} className="w-10 h-6 bg-pp-gold rounded-full relative cursor-pointer">
+                      <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between py-3">
+                    <div>
+                      <p className="text-sm text-pp-cream">Modo Escuro</p>
+                      <p className="text-[10px] text-pp-cream-dim">Interface sempre em modo escuro</p>
+                    </div>
+                    <button onClick={() => showToast('O modo escuro está sempre activo')} className="w-10 h-6 bg-pp-gold rounded-full relative cursor-pointer">
+                      <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

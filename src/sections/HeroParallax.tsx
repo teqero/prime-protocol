@@ -3,6 +3,11 @@ import ScrollReveal from '../components/ScrollReveal';
 import Particles from '../components/Particles';
 import Typewriter from '../components/Typewriter';
 
+function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 export default function HeroParallax() {
   const sectionRef = useRef<HTMLElement>(null);
   const [scrollY, setScrollY] = useState(0);
@@ -104,18 +109,18 @@ export default function HeroParallax() {
 
             <ScrollReveal delay={500}>
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-12 md:mb-16">
-                <a
-                  href="#contact"
-                  className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-3.5 bg-[#c9956b] text-[#0d0f14] font-sans font-semibold text-[11px] tracking-[0.15em] uppercase hover:bg-[#d4a87a] transition-all duration-300 hover:shadow-[0_0_30px_rgba(201,149,107,0.3)]"
+                <button
+                  onClick={() => scrollToSection('contact')}
+                  className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-3.5 bg-[#c9956b] text-[#0d0f14] font-sans font-semibold text-[11px] tracking-[0.15em] uppercase hover:bg-[#d4a87a] transition-all duration-300 hover:shadow-[0_0_30px_rgba(201,149,107,0.3)] cursor-pointer border-none"
                 >
                   Solicitar Orçamento
-                </a>
-                <a
-                  href="#about"
-                  className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-3.5 border border-[#c9956b]/40 text-[#c9956b] font-sans font-medium text-[11px] tracking-[0.15em] uppercase hover:bg-[#c9956b]/10 hover:border-[#c9956b] transition-all duration-300"
+                </button>
+                <button
+                  onClick={() => scrollToSection('about')}
+                  className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-3.5 border border-[#c9956b]/40 text-[#c9956b] font-sans font-medium text-[11px] tracking-[0.15em] uppercase hover:bg-[#c9956b]/10 hover:border-[#c9956b] transition-all duration-300 cursor-pointer bg-transparent"
                 >
                   Conheça-nos
-                </a>
+                </button>
               </div>
             </ScrollReveal>
 
