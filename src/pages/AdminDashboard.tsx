@@ -2,35 +2,55 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Calendar, Users, BarChart3, Settings, Bell, Search, Menu, X, PenLine,
   TrendingUp, TrendingDown, DollarSign, Briefcase, CheckCircle, Clock, AlertCircle,
-  ArrowLeft, LogOut, Plus, FileText, X as XIcon,
+  ArrowLeft, LogOut, Plus, FileText, X as XIcon, Shield, Trash2, UserPlus,
 } from 'lucide-react';
-import { supabase, adminLogout } from '../lib/supabase';
+import { supabase, adminLogout, listAdminUsers, createAdminUser, deleteAdminUser, createEvent, createContact } from '../lib/supabase';
 import { fetchAllSiteContent, updateSiteContent } from '../hooks/useSiteContent';
 import Logo from '../components/Logo';
 
-type Event = { id: string; name: string; event_date: string; status: string; client: string; event_type: string };
-type Task = { id: string; task: string; deadline: string; priority: string; status: string };
-type Contact = { id: string; name: string; email: string; service: string; status: string; created_at: string };
+type EventItem = { id: string; name: string; event_date: string; status: string; client: string; event_type: string };
+type TaskItem = { id: string; task: string; deadline: string; priority: string; status: string };
+type ContactItem = { id: string; name: string; email: string; service: string; status: string; created_at: string };
+type AdminUser = { id: string; email: string; created_at: string };
+
+const STATUS_COLORS: Record<string, string> = {
+  confirmed: 'bg-green-400', completed: 'bg-pp-gold', pending: 'bg-yellow-400', cancelled: 'bg-red-400',
+};
+const STATUS_TEXT: Record<string, string> = {
+  confirmed: 'text-green-400', completed: 'text-pp-gold', pending: 'text-yellow-400', cancelled: 'text-red-400',
+};
+const PRIORITY_STYLES: Record<string, string> = {
+  high: 'bg-red-500/10 text-red-400', medium: 'bg-yellow-500/10 text-yellow-400', low: 'bg-green-500/10 text-green-400',
+};
 
 export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [events, setEvents] = useState<Event[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [allContacts, setAllContacts] = useState<Contact[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [contacts, setContacts] = useState<ContactItem[]>([]);
+  const [allContacts, setAllContacts] = useState<ContactItem[]>([]);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [stats, setStats] = useState({ eventsMonth: 24, revenue: '4.2M', activeClients: 48, completionRate: '96%' });
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Modals
   const [showNewEventModal, setShowNewEventModal] = useState(false);
   const [showNewClientModal, setShowNewClientModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [showNewAdminModal, setShowNewAdminModal] = useState(false);
+
+  // Forms
+  const [eventForm, setEventForm] = useState({ name: '', client: '', event_type: 'corporate', event_date: '', description: '', status: 'pending' });
+  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', service: '', message: '' });
+  const [adminForm, setAdminForm] = useState({ email: '', password: '' });
+
+  // Content
   const [siteContent, setSiteContent] = useState<Array<{id: string; section: string; key: string; value: string}>>([]);
   const [contentLoading, setContentLoading] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -46,13 +66,13 @@ export default function AdminDashboard() {
       if (contactsRes.data) setContacts(contactsRes.data);
       if (allContactsRes.data) setAllContacts(allContactsRes.data);
 
-      const confirmed = eventsRes.data?.filter((e: Event) => e.status === 'confirmed').length || 0;
-      const completed = eventsRes.data?.filter((e: Event) => e.status === 'completed').length || 0;
+      const confirmed = eventsRes.data?.filter((e: EventItem) => e.status === 'confirmed').length || 0;
+      const completed = eventsRes.data?.filter((e: EventItem) => e.status === 'completed').length || 0;
       const total = eventsRes.data?.length || 1;
       setStats({
         eventsMonth: eventsRes.data?.length || 0,
         revenue: '4.2M',
-        activeClients: eventsRes.data ? [...new Set(eventsRes.data.map((e: Event) => e.client).filter(Boolean))].length : 0,
+        activeClients: eventsRes.data ? [...new Set(eventsRes.data.map((e: EventItem) => e.client).filter(Boolean))].length : 0,
         completionRate: `${Math.round(((completed + confirmed) / total) * 100)}%`,
       });
     } catch (err) { console.error(err); }
@@ -81,6 +101,63 @@ export default function AdminDashboard() {
     else { showToast('Conteúdo actualizado'); loadSiteContent(); }
   };
 
+  const handleCreateEvent = async () => {
+    if (!eventForm.name || !eventForm.client || !eventForm.event_date) {
+      showToast('Preencha os campos obrigatórios'); return;
+    }
+    const { error } = await createEvent(eventForm);
+    if (error) { showToast('Erro ao criar evento'); }
+    else {
+      showToast('Evento criado com sucesso');
+      setShowNewEventModal(false);
+      setEventForm({ name: '', client: '', event_type: 'corporate', event_date: '', description: '', status: 'pending' });
+      fetchData();
+    }
+  };
+
+  const handleCreateContact = async () => {
+    if (!contactForm.name || !contactForm.email) {
+      showToast('Preencha nome e email'); return;
+    }
+    const { error } = await createContact({ ...contactForm, status: 'new' });
+    if (error) { showToast('Erro ao criar contacto'); }
+    else {
+      showToast('Contacto criado com sucesso');
+      setShowNewClientModal(false);
+      setContactForm({ name: '', email: '', phone: '', service: '', message: '' });
+      fetchData();
+    }
+  };
+
+  const loadAdminUsers = async () => {
+    const { data, error } = await listAdminUsers();
+    if (!error && data) setAdminUsers(data);
+  };
+
+  const handleCreateAdmin = async () => {
+    if (!adminForm.email || !adminForm.password) {
+      showToast('Preencha email e password'); return;
+    }
+    const { error } = await createAdminUser(adminForm.email, adminForm.password);
+    if (error) { showToast('Erro ao criar administrador: ' + error.message); }
+    else {
+      showToast('Administrador criado com sucesso');
+      setShowNewAdminModal(false);
+      setAdminForm({ email: '', password: '' });
+      loadAdminUsers();
+    }
+  };
+
+  const handleDeleteAdmin = async (id: string) => {
+    if (!confirm('Tem certeza que deseja eliminar este administrador?')) return;
+    const { data, error } = await deleteAdminUser(id);
+    if (error || !data) { showToast('Erro ao eliminar administrador'); }
+    else {
+      showToast('Administrador eliminado');
+      loadAdminUsers();
+    }
+  };
+
   const statCards = [
     { label: 'Eventos do Mês', value: stats.eventsMonth.toString(), change: '+12%', up: true, icon: Calendar },
     { label: 'Receita (AOA)', value: stats.revenue, change: '+8%', up: true, icon: DollarSign },
@@ -88,14 +165,11 @@ export default function AdminDashboard() {
     { label: 'Taxa de Conclusão', value: stats.completionRate, change: '+2%', up: true, icon: CheckCircle },
   ];
 
-  const getStatusColor = (s: string) => ({ confirmed: 'bg-green-400', completed: 'bg-pp-gold', pending: 'bg-yellow-400', cancelled: 'bg-red-400' })[s] || 'bg-gray-400';
-  const getStatusText = (s: string) => ({ confirmed: 'text-green-400', completed: 'text-pp-gold', pending: 'text-yellow-400', cancelled: 'text-red-400' })[s] || 'text-gray-400';
-  const getPriority = (p: string) => ({ high: 'bg-red-500/10 text-red-400', medium: 'bg-yellow-500/10 text-yellow-400' })[p] || 'bg-green-500/10 text-green-400';
-
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard' },
     { icon: Calendar, label: 'Eventos', id: 'events' },
     { icon: Users, label: 'Clientes', id: 'clients' },
+    { icon: Shield, label: 'Utilizadores', id: 'users' },
     { icon: BarChart3, label: 'Relatórios', id: 'reports' },
     { icon: PenLine, label: 'Conteúdo', id: 'content' },
     { icon: Settings, label: 'Configurações', id: 'settings' },
@@ -108,6 +182,7 @@ export default function AdminDashboard() {
     dashboard: { pre: 'Painel de ', post: 'Controlo' },
     events: { pre: 'Gestão de ', post: 'Eventos' },
     clients: { pre: 'Gestão de ', post: 'Clientes' },
+    users: { pre: 'Gestão de ', post: 'Utilizadores' },
     reports: { pre: 'Relatórios ', post: 'e Estatísticas' },
     content: { pre: 'Gestão de ', post: 'Conteúdo' },
     settings: { pre: 'Configurações ', post: 'do Sistema' },
@@ -115,6 +190,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-pp-dark-2 text-pp-cream font-sans">
+      {/* Toast */}
       {toast && (
         <div className="fixed top-6 right-6 z-[70] bg-pp-gold text-pp-dark px-5 py-3 font-sans text-sm font-semibold shadow-lg flex items-center gap-3">
           <span>{toast}</span>
@@ -122,32 +198,139 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* Modal: Novo Evento */}
       {showNewEventModal && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-pp-dark border border-pp-border/30 w-full max-w-md p-6">
+          <div className="bg-pp-dark border border-pp-border/30 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-serif text-lg font-semibold text-pp-cream">Novo Evento</h3>
               <button onClick={() => setShowNewEventModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
             </div>
-            <p className="text-pp-cream-dim text-sm mb-4">Funcionalidade em desenvolvimento. Em breve poderá criar eventos directamente no painel.</p>
-            <button onClick={() => { setShowNewEventModal(false); showToast('Funcionalidade em desenvolvimento'); }} className="w-full py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Entendido</button>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Nome do Evento *</label>
+                <input type="text" value={eventForm.name} onChange={e => setEventForm({...eventForm, name: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none" placeholder="Ex: Gala Empresarial 2025" />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Cliente *</label>
+                  <input type="text" value={eventForm.client} onChange={e => setEventForm({...eventForm, client: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none" placeholder="Nome do cliente" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Data *</label>
+                  <input type="date" value={eventForm.event_date} onChange={e => setEventForm({...eventForm, event_date: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none" />
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Tipo</label>
+                  <select value={eventForm.event_type} onChange={e => setEventForm({...eventForm, event_type: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none">
+                    <option value="corporate">Corporativo</option>
+                    <option value="social">Social</option>
+                    <option value="diplomatic">Diplomático</option>
+                    <option value="cultural">Cultural</option>
+                    <option value="other">Outro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Estado</label>
+                  <select value={eventForm.status} onChange={e => setEventForm({...eventForm, status: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none">
+                    <option value="pending">Pendente</option>
+                    <option value="confirmed">Confirmado</option>
+                    <option value="completed">Concluído</option>
+                    <option value="cancelled">Cancelado</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Descrição</label>
+                <textarea value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} rows={3} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none resize-y" placeholder="Detalhes do evento..." />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowNewEventModal(false)} className="flex-1 py-2.5 border border-pp-border/30 text-pp-cream-dim font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-dark-3 transition-all">Cancelar</button>
+              <button onClick={handleCreateEvent} className="flex-1 py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Criar Evento</button>
+            </div>
           </div>
         </div>
       )}
 
+      {/* Modal: Novo Cliente */}
       {showNewClientModal && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-pp-dark border border-pp-border/30 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-serif text-lg font-semibold text-pp-cream">Novo Contacto</h3>
+              <button onClick={() => setShowNewClientModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
+            </div>
+            <div className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Nome *</label>
+                  <input type="text" value={contactForm.name} onChange={e => setContactForm({...contactForm, name: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none" placeholder="Nome completo" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Email *</label>
+                  <input type="email" value={contactForm.email} onChange={e => setContactForm({...contactForm, email: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none" placeholder="email@exemplo.com" />
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Telefone</label>
+                  <input type="text" value={contactForm.phone} onChange={e => setContactForm({...contactForm, phone: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none" placeholder="+244..." />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Serviço</label>
+                  <select value={contactForm.service} onChange={e => setContactForm({...contactForm, service: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none">
+                    <option value="">Selecionar...</option>
+                    <option value="protocolo">Protocolo</option>
+                    <option value="eventos">Eventos</option>
+                    <option value="consultoria">Consultoria</option>
+                    <option value="formacao">Formação</option>
+                    <option value="other">Outro</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Mensagem</label>
+                <textarea value={contactForm.message} onChange={e => setContactForm({...contactForm, message: e.target.value})} rows={3} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none resize-y" placeholder="Notas ou mensagem..." />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowNewClientModal(false)} className="flex-1 py-2.5 border border-pp-border/30 text-pp-cream-dim font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-dark-3 transition-all">Cancelar</button>
+              <button onClick={handleCreateContact} className="flex-1 py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Criar Contacto</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Novo Administrador */}
+      {showNewAdminModal && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
           <div className="bg-pp-dark border border-pp-border/30 w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-serif text-lg font-semibold text-pp-cream">Novo Cliente</h3>
-              <button onClick={() => setShowNewClientModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
+              <h3 className="font-serif text-lg font-semibold text-pp-cream">Novo Administrador</h3>
+              <button onClick={() => setShowNewAdminModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
             </div>
-            <p className="text-pp-cream-dim text-sm mb-4">Funcionalidade em desenvolvimento. Em breve poderá adicionar clientes directamente no painel.</p>
-            <button onClick={() => { setShowNewClientModal(false); showToast('Funcionalidade em desenvolvimento'); }} className="w-full py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Entendido</button>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Email *</label>
+                <input type="email" value={adminForm.email} onChange={e => setAdminForm({...adminForm, email: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none" placeholder="admin@primeprotocol.ao" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Password *</label>
+                <input type="password" value={adminForm.password} onChange={e => setAdminForm({...adminForm, password: e.target.value})} className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream focus:border-pp-gold/50 focus:outline-none" placeholder="Mínimo 6 caracteres" />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowNewAdminModal(false)} className="flex-1 py-2.5 border border-pp-border/30 text-pp-cream-dim font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-dark-3 transition-all">Cancelar</button>
+              <button onClick={handleCreateAdmin} className="flex-1 py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Criar Admin</button>
+            </div>
           </div>
         </div>
       )}
 
+      {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-pp-dark border-b border-pp-border/20 flex items-center justify-between px-4 z-50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full border border-pp-gold/40 flex items-center justify-center"><Logo size={28} /></div>
@@ -157,6 +340,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="flex pt-16 lg:pt-0">
+        {/* Sidebar */}
         <aside className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-pp-dark border-r border-pp-border/20 flex-shrink-0 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <div className="p-6 border-b border-pp-border/20 hidden lg:flex items-center gap-3">
             <div className="w-10 h-10 rounded-full border border-pp-gold/40 flex items-center justify-center"><Logo size={32} /></div>
@@ -168,7 +352,7 @@ export default function AdminDashboard() {
 
           <nav className="p-4 space-y-1">
             {navItems.map((item) => (
-              <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-pp-gold/10 text-pp-gold' : 'text-pp-cream-muted hover:bg-pp-dark-3 hover:text-pp-cream'}`}>
+              <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); if (item.id === 'users') loadAdminUsers(); if (item.id === 'content') loadSiteContent(); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-pp-gold/10 text-pp-gold' : 'text-pp-cream-muted hover:bg-pp-dark-3 hover:text-pp-cream'}`}>
                 <item.icon size={18} /> {item.label}
               </button>
             ))}
@@ -187,6 +371,7 @@ export default function AdminDashboard() {
           </div>
         </aside>
 
+        {/* Main Content */}
         <main className="flex-1 min-w-0 p-6 lg:p-10">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -207,6 +392,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* DASHBOARD */}
           {activeTab === 'dashboard' && (
             <>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -233,7 +419,7 @@ export default function AdminDashboard() {
                       {events.slice(0, 5).map((event) => (
                         <div key={event.id} className="flex items-center justify-between p-3 rounded-sm bg-pp-dark-3/50 hover:bg-pp-dark-3 transition-colors">
                           <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full ${getStatusColor(event.status)}`} />
+                            <div className={`w-2 h-2 rounded-full ${STATUS_COLORS[event.status] || 'bg-gray-400'}`} />
                             <div>
                               <p className="text-sm font-medium text-pp-cream">{event.name}</p>
                               <p className="text-[10px] text-pp-cream-dim">{event.client} · {event.event_type}</p>
@@ -241,7 +427,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="text-right">
                             <p className="text-xs text-pp-cream-muted">{event.event_date}</p>
-                            <span className={`text-[10px] uppercase tracking-wider ${getStatusText(event.status)}`}>{event.status}</span>
+                            <span className={`text-[10px] uppercase tracking-wider ${STATUS_TEXT[event.status] || 'text-gray-400'}`}>{event.status}</span>
                           </div>
                         </div>
                       ))}
@@ -258,14 +444,14 @@ export default function AdminDashboard() {
                     <div className="space-y-3">
                       {tasks.map((task) => (
                         <div key={task.id} className="flex items-start gap-3 p-3 rounded-sm bg-pp-dark-3/50 hover:bg-pp-dark-3 transition-colors">
-                          <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 ${getPriority(task.priority).split(' ')[0]}`}>
+                          <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 ${PRIORITY_STYLES[task.priority]?.split(' ')[0] || 'bg-green-500/10'}`}>
                             {task.priority === 'high' ? <AlertCircle size={14} className="text-red-400" /> : task.priority === 'medium' ? <Clock size={14} className="text-yellow-400" /> : <CheckCircle size={14} className="text-green-400" />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-pp-cream truncate">{task.task}</p>
                             <p className="text-[10px] text-pp-cream-dim mt-0.5">Prazo: {task.deadline}</p>
                           </div>
-                          <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm ${getPriority(task.priority)}`}>{task.priority}</span>
+                          <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm ${PRIORITY_STYLES[task.priority] || 'bg-green-500/10 text-green-400'}`}>{task.priority}</span>
                         </div>
                       ))}
                     </div>
@@ -315,6 +501,7 @@ export default function AdminDashboard() {
             </>
           )}
 
+          {/* EVENTS */}
           {activeTab === 'events' && (
             <div className="card-dark p-6">
               <div className="flex items-center justify-between mb-6">
@@ -336,7 +523,7 @@ export default function AdminDashboard() {
                           <td className="py-3 text-pp-cream-muted">{e.client}</td>
                           <td className="py-3 text-pp-cream-muted capitalize">{e.event_type}</td>
                           <td className="py-3 text-pp-cream-muted">{e.event_date}</td>
-                          <td className="py-3"><span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${getStatusText(e.status).replace('text-', 'bg-').replace('400', '500/10 text-')}`}>{e.status}</span></td>
+                          <td className="py-3"><span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${STATUS_TEXT[e.status]?.replace('text-', 'bg-').replace('400', '500/10 text-') || 'bg-gray-500/10 text-gray-400'}`}>{e.status}</span></td>
                         </tr>
                       ))}
                     </tbody>
@@ -346,6 +533,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* CLIENTS */}
           {activeTab === 'clients' && (
             <div className="card-dark p-6">
               <div className="flex items-center justify-between mb-6">
@@ -377,6 +565,55 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* USERS */}
+          {activeTab === 'users' && (
+            <div className="space-y-6">
+              <div className="card-dark p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-serif text-lg font-semibold text-pp-cream">Administradores do Sistema</h3>
+                  <button onClick={() => setShowNewAdminModal(true)} className="flex items-center gap-2 px-4 py-2 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all"><UserPlus size={14} /> Novo Admin</button>
+                </div>
+                {adminUsers.length === 0 ? (
+                  <div className="text-center py-8 text-pp-cream-dim text-sm">
+                    <p>A carregar utilizadores...</p>
+                    <button onClick={loadAdminUsers} className="mt-3 px-4 py-2 bg-pp-gold/10 text-pp-gold text-[11px] tracking-wider uppercase hover:bg-pp-gold/20 transition-all">Actualizar</button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
+                          <th className="pb-3 font-medium">Email</th><th className="pb-3 font-medium">Criado em</th><th className="pb-3 font-medium text-right">Acções</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-sm">
+                        {adminUsers.map((u) => (
+                          <tr key={u.id} className="border-b border-pp-border/10 hover:bg-pp-dark-3/30 transition-colors">
+                            <td className="py-3 text-pp-cream">{u.email}</td>
+                            <td className="py-3 text-pp-cream-muted">{new Date(u.created_at).toLocaleDateString('pt-AO')}</td>
+                            <td className="py-3 text-right">
+                              <button onClick={() => handleDeleteAdmin(u.id)} className="text-red-400 hover:text-red-300 transition-colors" title="Eliminar"><Trash2 size={16} /></button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div className="card-dark p-6">
+                <h3 className="font-serif text-lg font-semibold text-pp-cream mb-4">Segurança</h3>
+                <div className="space-y-3 text-sm text-pp-cream-muted">
+                  <p>• A password é armazenada com hash bcrypt de forma segura.</p>
+                  <p>• Não é possível eliminar o último administrador do sistema.</p>
+                  <p>• Novos administradores têm acesso total ao painel.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* REPORTS */}
           {activeTab === 'reports' && (
             <div className="space-y-6">
               <div className="card-dark p-6">
@@ -412,6 +649,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* CONTENT */}
           {activeTab === 'content' && (
             <div className="space-y-6">
               <div className="card-dark p-6">
@@ -443,6 +681,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-6 max-w-2xl">
               <div className="card-dark p-6">

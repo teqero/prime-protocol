@@ -39,3 +39,30 @@ export async function adminVerifyToken(token: string) {
 export async function adminLogout(token: string) {
   return edgePost('/logout', { token });
 }
+
+// Admin users RPC helpers
+export async function listAdminUsers() {
+  const { data, error } = await supabase.rpc('list_admin_users');
+  return { data, error };
+}
+
+export async function createAdminUser(email: string, password: string) {
+  const { data, error } = await supabase.rpc('create_admin_user', { p_email: email, p_password: password });
+  return { data, error };
+}
+
+export async function deleteAdminUser(id: string) {
+  const { data, error } = await supabase.rpc('delete_admin_user', { p_id: id });
+  return { data, error };
+}
+
+// Direct table inserts
+export async function createEvent(event: { name: string; client: string; event_type: string; event_date: string; description?: string; status?: string }) {
+  const { data, error } = await supabase.from('events').insert([event]).select().single();
+  return { data, error };
+}
+
+export async function createContact(contact: { name: string; email: string; phone?: string; service?: string; message?: string; status?: string }) {
+  const { data, error } = await supabase.from('contacts').insert([contact]).select().single();
+  return { data, error };
+}
