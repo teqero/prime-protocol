@@ -77,7 +77,7 @@ export default function Footer() {
           <div className="col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full border border-[#c9956b]/40 flex items-center justify-center">
-                <img src="/images/logo.png" alt="Prime Protocol" className="w-6 h-6 object-contain" />
+                <img src="/images/logo-icon-120.png" alt="Prime Protocol" className="w-8 h-8 object-contain" />
               </div>
               <span className="font-serif text-lg font-semibold text-[#f5f0e8] tracking-wide uppercase">
                 Prime Protocol

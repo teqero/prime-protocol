@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import AnalyticsTracker from './components/AnalyticsTracker';
 
@@ -20,6 +21,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

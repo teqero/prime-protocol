@@ -56,10 +56,7 @@ export default function HeroParallax() {
       className="relative w-full min-h-screen flex items-center overflow-hidden bg-[#0d0f14]"
     >
       {/* Parallax background layers */}
-      <div
-        className="absolute inset-0 z-[0]"
-        style={{ transform: `translateY(${scrollY * 0.2}px)` }}
-      >
+      <div className="absolute inset-0 z-[0]" style={{ transform: `translateY(${scrollY * 0.2}px)` }}>
         <div className="absolute top-20 right-20 w-[600px] h-[600px] rounded-full border border-[#c9956b]/[0.03]" />
         <div className="absolute bottom-40 left-10 w-[400px] h-[400px] rounded-full border border-[#c9956b]/[0.02]" />
       </div>
@@ -67,22 +64,20 @@ export default function HeroParallax() {
       <Particles />
 
       {/* Grid pattern */}
-      <div
-        className="absolute inset-0 z-[0] opacity-[0.015]"
-        style={{ transform: `translateY(${scrollY * 0.1}px)` }}
-      >
+      <div className="absolute inset-0 z-[0] opacity-[0.015]" style={{ transform: `translateY(${scrollY * 0.1}px)` }}>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNjOTk1NmIiLz48L3N2Zz4=')]" />
       </div>
 
-      {/* Left accent bar */}
+      {/* Accent bars */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#c9956b]/60 hidden lg:block z-[5]" />
-      {/* Right accent bar */}
       <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#c9956b]/20 hidden lg:block z-[5]" />
 
       <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20 relative z-10 pt-[100px] md:pt-[120px]">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center min-h-[calc(100vh-120px)]">
-          {/* LEFT — Text Content (conforme Figma) */}
-          <div className="py-12 lg:py-24 order-2 lg:order-1">
+        {/* Desktop: texto esquerda, foto direita. Mobile: foto topo, texto baixo */}
+        <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center min-h-[calc(100vh-120px)]">
+          
+          {/* LEFT COLUMN — Text Content */}
+          <div className="py-12 lg:py-24">
             <ScrollReveal delay={0}>
               <div className="flex items-center gap-3 mb-8 md:mb-10">
                 <div className="w-10 h-[1px] bg-[#c9956b]" />
@@ -167,10 +162,10 @@ export default function HeroParallax() {
             </ScrollReveal>
           </div>
 
-          {/* RIGHT — CEO Photo (voltou para a direita) */}
+          {/* RIGHT COLUMN — CEO Photo */}
           <ScrollReveal delay={300} direction="scale">
             <div
-              className="relative flex justify-center lg:justify-end order-1 lg:order-2"
+              className="relative flex justify-center lg:justify-end"
               style={{ transform: `translateY(${-scrollY * 0.15}px)` }}
             >
               <div className="relative w-full max-w-[380px] md:max-w-[480px] aspect-[3/4]">
