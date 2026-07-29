@@ -66,3 +66,27 @@ export async function createContact(contact: { name: string; email: string; phon
   const { data, error } = await supabase.from('contacts').insert([contact]).select().single();
   return { data, error };
 }
+
+// Update & Delete helpers
+export async function updateEvent(id: string, event: Partial<{ name: string; client: string; event_type: string; event_date: string; description: string; status: string }>) {
+  const { data, error } = await supabase.from('events').update(event).eq('id', id).select().single();
+  return { data, error };
+}
+
+export async function deleteEvent(id: string) {
+  const { error } = await supabase.from('events').delete().eq('id', id);
+  return { error };
+}
+
+export async function updateContact(id: string, contact: Partial<{ name: string; email: string; phone: string; service: string; message: string; status: string }>) {
+  const { data, error } = await supabase.from('contacts').update(contact).eq('id', id).select().single();
+  return { data, error };
+}
+
+export async function deleteContact(id: string) {
+  const { error } = await supabase.from('contacts').delete().eq('id', id);
+  return { error };
+}
+  const { data, error } = await supabase.from('contacts').insert([contact]).select().single();
+  return { data, error };
+}

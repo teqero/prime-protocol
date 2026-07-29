@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Calendar, Users, BarChart3, Settings, Bell, Search, Menu, X, PenLine,
   TrendingUp, TrendingDown, DollarSign, Briefcase, CheckCircle, Clock, AlertCircle,
-  ArrowLeft, LogOut, Plus, FileText, X as XIcon, Shield, Trash2, UserPlus,
+  ArrowLeft, LogOut, Plus, FileText, X as XIcon, Shield, Trash2, UserPlus, Pencil,
+} from 'lucide-react';
+import { supabase, adminLogout, listAdminUsers, createAdminUser, deleteAdminUser, createEvent, createContact, updateEvent, deleteEvent, updateContact, deleteContact } from '../lib/supabase';
 } from 'lucide-react';
 import { supabase, adminLogout, listAdminUsers, createAdminUser, deleteAdminUser, createEvent, createContact } from '../lib/supabase';
 import { fetchAllSiteContent, updateSiteContent } from '../hooks/useSiteContent';
@@ -47,6 +49,12 @@ export default function AdminDashboard() {
   const [adminForm, setAdminForm] = useState({ email: '', password: '' });
 
   // Content
+  const [siteContent, setSiteContent] = useState<Array<{id: string; section: string; key: string; value: string}>>([]);
+  const [contentLoading, setContentLoading] = useState(false);
+
+  // Editing states
+  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
+  const [editingContact, setEditingContact] = useState<ContactItem | null>(null);
   const [siteContent, setSiteContent] = useState<Array<{id: string; section: string; key: string; value: string}>>([]);
   const [contentLoading, setContentLoading] = useState(false);
 
@@ -105,28 +113,36 @@ export default function AdminDashboard() {
     if (!eventForm.name || !eventForm.client || !eventForm.event_date) {
       showToast('Preencha os campos obrigatórios'); return;
     }
-    const { error } = await createEvent(eventForm);
-    if (error) { showToast('Erro ao criar evento'); }
-    else {
-      showToast('Evento criado com sucesso');
-      setShowNewEventModal(false);
-      setEventForm({ name: '', client: '', event_type: 'corporate', event_date: '', description: '', status: 'pending' });
-      fetchData();
+    if (editingEvent) {
+      const { error } = await updateEvent(editingEvent.id, eventForm);
+      if (error) { showToast('Erro ao actualizar evento'); }
+      else { showToast('Evento actualizado'); setEditingEvent(null); }
+    } else {
+      const { error } = await createEvent(eventForm);
+      if (error) { showToast('Erro ao criar evento'); }
+      else { showToast('Evento criado com sucesso'); }
     }
+    setShowNewEventModal(false);
+    setEventForm({ name: '', client: '', event_type: 'corporate', event_date: '', description: '', status: 'pending' });
+    fetchData();
   };
 
   const handleCreateContact = async () => {
     if (!contactForm.name || !contactForm.email) {
       showToast('Preencha nome e email'); return;
     }
-    const { error } = await createContact({ ...contactForm, status: 'new' });
-    if (error) { showToast('Erro ao criar contacto'); }
-    else {
-      showToast('Contacto criado com sucesso');
-      setShowNewClientModal(false);
-      setContactForm({ name: '', email: '', phone: '', service: '', message: '' });
-      fetchData();
+    if (editingContact) {
+      const { error } = await updateContact(editingContact.id, { ...contactForm, status: editingContact.status });
+      if (error) { showToast('Erro ao actualizar contacto'); }
+      else { showToast('Contacto actualizado'); setEditingContact(null); }
+    } else {
+      const { error } = await createContact({ ...contactForm, status: 'new' });
+      if (error) { showToast('Erro ao criar contacto'); }
+      else { showToast('Contacto criado com sucesso'); }
     }
+    setShowNewClientModal(false);
+    setContactForm({ name: '', email: '', phone: '', service: '', message: '' });
+    fetchData();
   };
 
   const loadAdminUsers = async () => {
@@ -149,6 +165,53 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteAdmin = async (id: string) => {
+    if (!confirm('Tem certeza que deseja eliminar este administrador?')) return;
+    const { data, error } = await deleteAdminUser(id);
+    if (error || !data) { showToast('Erro ao eliminar administrador'); }
+    else {
+      showToast('Administrador eliminado');
+      loadAdminUsers();
+    }
+  };
+
+  const handleEditEvent = (event: EventItem) => {
+    setEditingEvent(event);
+    setEventForm({
+      name: event.name,
+      client: event.client,
+      event_type: event.event_type || 'corporate',
+      event_date: event.event_date,
+      description: '',
+      status: event.status || 'pending',
+    });
+    setShowNewEventModal(true);
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    if (!confirm('Tem certeza que deseja eliminar este evento?')) return;
+    const { error } = await deleteEvent(id);
+    if (error) { showToast('Erro ao eliminar evento'); }
+    else { showToast('Evento eliminado'); fetchData(); }
+  };
+
+  const handleEditContact = (contact: ContactItem) => {
+    setEditingContact(contact);
+    setContactForm({
+      name: contact.name,
+      email: contact.email,
+      phone: '',
+      service: contact.service || '',
+      message: '',
+    });
+    setShowNewClientModal(true);
+  };
+
+  const handleDeleteContact = async (id: string) => {
+    if (!confirm('Tem certeza que deseja eliminar este contacto?')) return;
+    const { error } = await deleteContact(id);
+    if (error) { showToast('Erro ao eliminar contacto'); }
+    else { showToast('Contacto eliminado'); fetchData(); }
+  };
     if (!confirm('Tem certeza que deseja eliminar este administrador?')) return;
     const { data, error } = await deleteAdminUser(id);
     if (error || !data) { showToast('Erro ao eliminar administrador'); }
@@ -203,7 +266,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
           <div className="bg-pp-dark border border-pp-border/30 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-serif text-lg font-semibold text-pp-cream">Novo Evento</h3>
+              <h3 className="font-serif text-lg font-semibold text-pp-cream">{editingEvent ? `Editar Evento` : `Novo Evento`}</h3>
               <button onClick={() => setShowNewEventModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
             </div>
             <div className="space-y-4">
@@ -249,7 +312,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowNewEventModal(false)} className="flex-1 py-2.5 border border-pp-border/30 text-pp-cream-dim font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-dark-3 transition-all">Cancelar</button>
-              <button onClick={handleCreateEvent} className="flex-1 py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Criar Evento</button>
+              <button onClick={handleCreateEvent} className="flex-1 py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">{editingEvent ? `Guardar Alterações` : `Criar Evento`}</button>
             </div>
           </div>
         </div>
@@ -260,7 +323,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
           <div className="bg-pp-dark border border-pp-border/30 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-serif text-lg font-semibold text-pp-cream">Novo Contacto</h3>
+              <h3 className="font-serif text-lg font-semibold text-pp-cream">{editingContact ? `Editar Contacto` : `Novo Contacto`}</h3>
               <button onClick={() => setShowNewClientModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
             </div>
             <div className="space-y-4">
@@ -298,7 +361,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowNewClientModal(false)} className="flex-1 py-2.5 border border-pp-border/30 text-pp-cream-dim font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-dark-3 transition-all">Cancelar</button>
-              <button onClick={handleCreateContact} className="flex-1 py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Criar Contacto</button>
+              <button onClick={handleCreateContact} className="flex-1 py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">{editingContact ? `Guardar Alterações` : `Criar Contacto`}</button>
             </div>
           </div>
         </div>
@@ -469,7 +532,7 @@ export default function AdminDashboard() {
                     <table className="w-full">
                       <thead>
                         <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
-                          <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Email</th><th className="pb-3 font-medium">Serviço</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th>
+                          <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Email</th><th className="pb-3 font-medium">Serviço</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th><th className="pb-3 font-medium text-right">Acções</th>
                         </tr>
                       </thead>
                       <tbody className="text-sm">
@@ -513,7 +576,7 @@ export default function AdminDashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
-                        <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Cliente</th><th className="pb-3 font-medium">Tipo</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th>
+                        <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Cliente</th><th className="pb-3 font-medium">Tipo</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th><th className="pb-3 font-medium text-right">Acções</th>
                       </tr>
                     </thead>
                     <tbody className="text-sm">
@@ -524,6 +587,10 @@ export default function AdminDashboard() {
                           <td className="py-3 text-pp-cream-muted capitalize">{e.event_type}</td>
                           <td className="py-3 text-pp-cream-muted">{e.event_date}</td>
                           <td className="py-3"><span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${STATUS_TEXT[e.status]?.replace('text-', 'bg-').replace('400', '500/10 text-') || 'bg-gray-500/10 text-gray-400'}`}>{e.status}</span></td>
+                          <td className="py-3 text-right">
+                            <button onClick={() => handleEditEvent(e)} className="text-pp-cream-dim hover:text-pp-gold mr-3" title="Editar"><Pencil size={14} /></button>
+                            <button onClick={() => handleDeleteEvent(e.id)} className="text-pp-cream-dim hover:text-red-400" title="Eliminar"><Trash2 size={14} /></button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -545,7 +612,7 @@ export default function AdminDashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
-                        <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Email</th><th className="pb-3 font-medium">Serviço</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th>
+                        <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Email</th><th className="pb-3 font-medium">Serviço</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th><th className="pb-3 font-medium text-right">Acções</th>
                       </tr>
                     </thead>
                     <tbody className="text-sm">
@@ -556,6 +623,10 @@ export default function AdminDashboard() {
                           <td className="py-3 text-pp-cream-muted capitalize">{c.service || '-'}</td>
                           <td className="py-3 text-pp-cream-muted">{new Date(c.created_at).toLocaleDateString('pt-AO')}</td>
                           <td className="py-3"><span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${c.status === 'new' ? 'bg-yellow-500/10 text-yellow-400' : c.status === 'read' ? 'bg-blue-500/10 text-blue-400' : c.status === 'replied' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}`}>{c.status}</span></td>
+                          <td className="py-3 text-right">
+                            <button onClick={() => handleEditContact(c)} className="text-pp-cream-dim hover:text-pp-gold mr-3" title="Editar"><Pencil size={14} /></button>
+                            <button onClick={() => handleDeleteContact(c.id)} className="text-pp-cream-dim hover:text-red-400" title="Eliminar"><Trash2 size={14} /></button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
