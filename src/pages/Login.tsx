@@ -15,25 +15,23 @@ export default function Login() {
     setLoading(true);
     setError('');
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error: rpcError } = await supabase.rpc('verify_admin_login', {
+        p_email: email,
+        p_password: password,
+      });
 
-    if (signInError) {
-      console.error('Login error:', signInError);
-      setError(signInError.message === 'Invalid login credentials'
-        ? 'Email ou palavra-passe incorretos.'
-        : 'Erro ao entrar: ' + signInError.message);
-      setLoading(false);
-      return;
-    }
+      if (rpcError || !data || data.length === 0) {
+        setError('Email ou palavra-passe incorretos.');
+        setLoading(false);
+        return;
+      }
 
-    if (data.session) {
-      // Force page reload so ProtectedRoute picks up the session
+      const { token } = data[0];
+      localStorage.setItem('pp_admin_token', token);
       window.location.href = '/admin';
-    } else {
-      setError('Sessão não criada. Tente novamente.');
+    } catch {
+      setError('Erro ao entrar. Tente novamente.');
       setLoading(false);
     }
   };
@@ -41,7 +39,6 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#0d0f14] flex items-center justify-center px-6">
       <div className="w-full max-w-[400px]">
-        {/* Logo */}
         <div className="text-center mb-10">
           <div className="w-16 h-16 rounded-full border border-[#c9956b]/40 flex items-center justify-center mx-auto mb-4">
             <Logo size={44} />
@@ -54,7 +51,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
             <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-sans text-center">

@@ -18,13 +18,9 @@ export default function AdminDashboard() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [stats, setStats] = useState({ eventsMonth: 24, revenue: '4.2M', activeClients: 48, completionRate: '96%' });
   const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     fetchData();
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user?.email) setUserEmail(data.user.email);
-    });
   }, []);
 
   const fetchData = async () => {
@@ -53,7 +49,11 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const token = localStorage.getItem('pp_admin_token');
+    if (token) {
+      await supabase.rpc('admin_logout', { p_token: token });
+    }
+    localStorage.removeItem('pp_admin_token');
     window.location.href = '/login';
   };
 
@@ -70,7 +70,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-pp-dark-2 text-pp-cream font-sans">
-      {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-pp-dark border-b border-pp-border/20 flex items-center justify-between px-4 z-50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full border border-pp-gold/40 flex items-center justify-center">
@@ -84,7 +83,6 @@ export default function AdminDashboard() {
       </div>
 
       <div className="flex pt-16 lg:pt-0">
-        {/* Sidebar */}
         <aside className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-pp-dark border-r border-pp-border/20 flex-shrink-0 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <div className="p-6 border-b border-pp-border/20 hidden lg:flex items-center gap-3">
             <div className="w-10 h-10 rounded-full border border-pp-gold/40 flex items-center justify-center">
@@ -117,7 +115,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm font-medium text-pp-cream">Lucíria Meury Rodrigues de Sousa</p>
-                <p className="text-[10px] text-pp-cream-dim">{userEmail || 'Administrador'}</p>
+                <p className="text-[10px] text-pp-cream-dim">Administrador</p>
               </div>
             </div>
           </div>
@@ -141,7 +139,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Stats */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {statCards.map((stat, i) => (
               <div key={i} className="card-dark p-5">
@@ -157,7 +154,6 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          {/* Events & Tasks */}
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
             <div className="card-dark p-6">
               <div className="flex items-center justify-between mb-6">
@@ -209,7 +205,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Contacts */}
           <div className="card-dark p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-serif text-lg font-semibold text-pp-cream">Contactos Recentes</h3>
@@ -241,7 +236,6 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* Quick Actions */}
           <div className="card-dark p-6">
             <h3 className="font-serif text-lg font-semibold text-pp-cream mb-4">Ações Rápidas</h3>
             <div className="grid sm:grid-cols-3 gap-4">
