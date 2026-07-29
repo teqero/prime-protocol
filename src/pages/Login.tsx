@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { adminLogin } from '../lib/supabase';
 import Logo from '../components/Logo';
 
 export default function Login() {
@@ -16,19 +16,15 @@ export default function Login() {
     setError('');
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('verify_admin_login', {
-        p_email: email,
-        p_password: password,
-      });
+      const { ok, data } = await adminLogin(email, password);
 
-      if (rpcError || !data || data.length === 0) {
-        setError('Email ou palavra-passe incorretos.');
+      if (!ok || !data.token) {
+        setError(data.error || 'Email ou palavra-passe incorretos.');
         setLoading(false);
         return;
       }
 
-      const { token } = data[0];
-      localStorage.setItem('pp_admin_token', token);
+      localStorage.setItem('pp_admin_token', data.token);
       window.location.href = '/admin';
     } catch {
       setError('Erro ao entrar. Tente novamente.');

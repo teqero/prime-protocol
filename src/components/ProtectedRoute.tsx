@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router';
-import { supabase } from '../lib/supabase';
+import { adminVerifyToken } from '../lib/supabase';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
@@ -14,11 +14,9 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
       }
 
       try {
-        const { data, error } = await supabase.rpc('verify_session_token', {
-          p_token: token,
-        });
+        const { ok, data } = await adminVerifyToken(token);
 
-        if (error || !data || data.length === 0 || !data[0].valid) {
+        if (!ok || !data.valid) {
           localStorage.removeItem('pp_admin_token');
           setIsAuth(false);
           return;

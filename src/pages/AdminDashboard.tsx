@@ -4,7 +4,7 @@ import {
   TrendingUp, TrendingDown, DollarSign, Briefcase, CheckCircle, Clock, AlertCircle,
   ArrowLeft, LogOut,
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, adminLogout } from '../lib/supabase';
 import Logo from '../components/Logo';
 
 type Event = { id: string; name: string; event_date: string; status: string; client: string; event_type: string };
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     const token = localStorage.getItem('pp_admin_token');
     if (token) {
-      await supabase.rpc('admin_logout', { p_token: token });
+      await adminLogout(token);
     }
     localStorage.removeItem('pp_admin_token');
     window.location.href = '/login';
