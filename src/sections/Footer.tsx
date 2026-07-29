@@ -1,34 +1,6 @@
 import { useState } from 'react';
+import { useAppContext } from '../context/AppContext';
 import { ArrowUp, X } from 'lucide-react';
-
-const footerLinks = [
-  {
-    title: 'Empresa',
-    links: [
-      { label: 'Sobre Nós', href: '#about', scroll: true },
-      { label: 'Equipa', href: '#founder', scroll: true },
-      { label: 'Serviços', href: '#services', scroll: true },
-      { label: 'Contactos', href: '#contact', scroll: true },
-    ],
-  },
-  {
-    title: 'Serviços',
-    links: [
-      { label: 'Eventos Corporativos', href: '#services', scroll: true },
-      { label: 'Cerimonial', href: '#services', scroll: true },
-      { label: 'Protocolo Diplomático', href: '#services', scroll: true },
-      { label: 'Formação', href: '#services', scroll: true },
-    ],
-  },
-  {
-    title: 'Legal',
-    links: [
-      { label: 'Termos de Uso', href: '#', legal: true },
-      { label: 'Política de Privacidade', href: '#', legal: true },
-      { label: 'Cookies', href: '#', legal: true },
-    ],
-  },
-];
 
 const socialLinks = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/prime-protocol-ao', abbr: 'in' },
@@ -45,8 +17,39 @@ function scrollToSection(href: string) {
 }
 
 export default function Footer() {
+  const { t, theme } = useAppContext();
+  const isDark = theme === 'dark';
   const [comingSoon, setComingSoon] = useState(false);
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const footerLinks = [
+    {
+      title: t('footer.company'),
+      links: [
+        { label: t('footer.about'), href: '#about', scroll: true },
+        { label: t('footer.team'), href: '#founder', scroll: true },
+        { label: t('footer.services'), href: '#services', scroll: true },
+        { label: t('footer.contact'), href: '#contact', scroll: true },
+      ],
+    },
+    {
+      title: t('footer.services'),
+      links: [
+        { label: t('footer.corpEvents'), href: '#services', scroll: true },
+        { label: t('footer.ceremonial'), href: '#services', scroll: true },
+        { label: t('footer.diplomatic'), href: '#services', scroll: true },
+        { label: t('footer.training'), href: '#services', scroll: true },
+      ],
+    },
+    {
+      title: t('footer.legal'),
+      links: [
+        { label: t('footer.terms'), href: '#', legal: true },
+        { label: t('footer.privacy'), href: '#', legal: true },
+        { label: t('footer.cookies'), href: '#', legal: true },
+      ],
+    },
+  ];
 
   const handleLinkClick = (e: React.MouseEvent, link: { href: string; scroll?: boolean; legal?: boolean }) => {
     if (link.legal) {
@@ -60,11 +63,12 @@ export default function Footer() {
   };
 
   return (
-    <footer className="w-full bg-[#0d0f14] border-t border-[#2a2520]/30 relative">
+    <footer className="w-full border-t relative"
+            style={{ backgroundColor: 'var(--pp-bg)', borderColor: 'var(--pp-border)' }}>
       {/* Coming Soon Toast */}
       {comingSoon && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-[#c9956b] text-[#0d0f14] px-6 py-3 font-sans text-sm font-semibold tracking-wide shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-300 flex items-center gap-3">
-          <span>Em breve — Documento em preparação</span>
+          <span>{t('footer.soon')}</span>
           <button onClick={() => setComingSoon(false)} className="hover:opacity-70">
             <X size={14} />
           </button>
@@ -79,13 +83,13 @@ export default function Footer() {
               <div className="w-10 h-10 rounded-full border border-[#c9956b]/40 flex items-center justify-center">
                 <img src="/images/logo-icon-120.png" alt="Prime Protocol" className="w-8 h-8 object-contain" />
               </div>
-              <span className="font-serif text-lg font-semibold text-[#f5f0e8] tracking-wide uppercase">
+              <span className="font-serif text-lg font-semibold tracking-wide uppercase"
+                    style={{ color: 'var(--pp-text)' }}>
                 Prime Protocol
               </span>
             </div>
             <p className="text-[#6b6560] font-sans text-[13px] leading-relaxed mb-6">
-              Excelência em protocolo, cerimonial e organização de eventos
-              executivos em Angola desde 2020.
+              {t('footer.desc')}
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => (
@@ -106,7 +110,8 @@ export default function Footer() {
           {/* Links */}
           {footerLinks.map((group) => (
             <div key={group.title}>
-              <h4 className="font-serif text-[13px] font-semibold text-[#f5f0e8] uppercase tracking-[0.1em] mb-6">
+              <h4 className="font-serif text-[13px] font-semibold uppercase tracking-[0.1em] mb-6"
+                  style={{ color: 'var(--pp-text)' }}>
                 {group.title}
               </h4>
               <ul className="space-y-3">
@@ -129,7 +134,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-[#2a2520]/20 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[#6b6560] font-sans text-[11px]">
-            © {new Date().getFullYear()} Prime Protocol. Todos os direitos reservados.
+            © {new Date().getFullYear()} Prime Protocol. {t('footer.rights')}
           </p>
           <button
             onClick={scrollToTop}

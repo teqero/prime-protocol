@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
+import { useAppContext } from '../context/AppContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const galleryImages = [
@@ -11,6 +12,7 @@ const galleryImages = [
 ];
 
 export default function GalleryCarousel() {
+  const { t, theme } = useAppContext();
   const [current, setCurrent] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -43,7 +45,8 @@ export default function GalleryCarousel() {
   return (
     <section
       id="gallery"
-      className="w-full bg-[#111318] py-24 lg:py-32"
+      className="w-full py-24 lg:py-32"
+      style={{ backgroundColor: 'var(--pp-bg-2)' }}
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
@@ -57,7 +60,8 @@ export default function GalleryCarousel() {
             </span>
             <div className="w-12 h-[1px] bg-[#c9956b]" />
           </div>
-          <h2 className="font-serif text-[48px] lg:text-[56px] font-normal text-[#f5f0e8] leading-[1.1]">
+          <h2 className="font-serif text-[48px] lg:text-[56px] font-normal leading-[1.1]"
+              style={{ color: 'var(--pp-text)' }}>
             Galeria de <span className="font-semibold">Eventos</span>
           </h2>
         </div>
@@ -101,13 +105,15 @@ export default function GalleryCarousel() {
           {/* Navigation Arrows */}
           <button
             onClick={prev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#0d0f14]/80 border border-[#2a2520] flex items-center justify-center text-[#f5f0e8] hover:bg-[#c9956b] hover:text-[#0d0f14] hover:border-[#c9956b] transition-all duration-300"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 border flex items-center justify-center transition-all duration-300"
+            style={{ backgroundColor: 'rgba(13,15,20,0.8)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={next}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#0d0f14]/80 border border-[#2a2520] flex items-center justify-center text-[#f5f0e8] hover:bg-[#c9956b] hover:text-[#0d0f14] hover:border-[#c9956b] transition-all duration-300"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 border flex items-center justify-center transition-all duration-300"
+            style={{ backgroundColor: 'rgba(13,15,20,0.8)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
           >
             <ChevronRight size={20} />
           </button>
@@ -130,24 +136,28 @@ export default function GalleryCarousel() {
       {/* Lightbox */}
       {lightbox !== null && (
         <div
-          className="fixed inset-0 z-[100] bg-[#0d0f14]/95 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] backdrop-blur-md flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(13,15,20,0.95)' }}
           onClick={() => setLightbox(null)}
         >
           <button
             onClick={() => setLightbox(null)}
-            className="absolute top-6 right-6 text-[#f5f0e8] hover:text-[#c9956b] text-2xl"
+            className="absolute top-6 right-6 text-2xl"
+            style={{ color: 'var(--pp-text)' }}
           >
             ✕
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setLightbox(lightbox === 0 ? galleryImages.length - 1 : lightbox - 1); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#0d0f14]/80 border border-[#2a2520] flex items-center justify-center text-[#f5f0e8] hover:bg-[#c9956b] hover:text-[#0d0f14] transition-all"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 border flex items-center justify-center transition-all"
+            style={{ backgroundColor: 'rgba(13,15,20,0.8)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % galleryImages.length); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#0d0f14]/80 border border-[#2a2520] flex items-center justify-center text-[#f5f0e8] hover:bg-[#c9956b] hover:text-[#0d0f14] transition-all"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 border flex items-center justify-center transition-all"
+            style={{ backgroundColor: 'rgba(13,15,20,0.8)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
           >
             <ChevronRight size={20} />
           </button>
@@ -159,7 +169,7 @@ export default function GalleryCarousel() {
               className="max-w-full max-h-[80vh] object-contain"
             />
             <div className="text-center mt-4">
-              <p className="font-serif text-xl text-[#f5f0e8]">{galleryImages[lightbox].title}</p>
+              <p className="font-serif text-xl" style={{ color: 'var(--pp-text)' }}>{galleryImages[lightbox].title}</p>
               <p className="text-[10px] text-[#c9956b] tracking-[0.2em] uppercase">{galleryImages[lightbox].category}</p>
             </div>
           </div>

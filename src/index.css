@@ -32,10 +32,23 @@
     --sidebar-accent-foreground: 36 33% 94%;
     --sidebar-border: 30 12% 15%;
     --sidebar-ring: 28 45% 60%;
+
+    /* Theme-aware custom properties (dark = default) */
+    --pp-bg: #0d0f14;
+    --pp-bg-2: #111318;
+    --pp-bg-3: #16181d;
+    --pp-text: #f5f0e8;
+    --pp-text-muted: #8a7e74;
+    --pp-text-dim: #6b6560;
+    --pp-border: #2a2520;
+    --pp-gold: #c9956b;
+    --pp-gold-light: #d4a87a;
   }
 
   body {
     @apply bg-pp-dark text-pp-cream font-sans antialiased;
+    background-color: var(--pp-bg);
+    color: var(--pp-text);
     scroll-behavior: smooth;
   }
 
@@ -50,12 +63,28 @@
 
 /* Light mode — classes aplicadas via JS no body */
 body.light-mode {
-  background-color: #f5f0e8 !important;
-  color: #1a1a1a !important;
+  --pp-bg: #f5f0e8;
+  --pp-bg-2: #ece6da;
+  --pp-bg-3: #e2dbd0;
+  --pp-text: #1a1a1a;
+  --pp-text-muted: #5c5348;
+  --pp-text-dim: #8a7e74;
+  --pp-border: #d4cbbf;
+  --pp-gold: #a67c52;
+  --pp-gold-light: #c9956b;
+
+  background-color: var(--pp-bg) !important;
+  color: var(--pp-text) !important;
 }
+
 body.light-mode ::selection {
-  background-color: rgba(201, 149, 107, 0.3);
+  background-color: rgba(166, 124, 82, 0.3);
   color: #1a1a1a;
+}
+
+/* Force iframe maps to adapt in light mode */
+body.light-mode iframe {
+  filter: none !important;
 }
 
 @layer components {

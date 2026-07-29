@@ -87,6 +87,3 @@ export async function deleteContact(id: string) {
   const { error } = await supabase.from('contacts').delete().eq('id', id);
   return { error };
 }
-  const { data, error } = await supabase.from('contacts').insert([contact]).select().single();
-  return { data, error };
-}

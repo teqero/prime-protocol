@@ -5,8 +5,6 @@ import {
   ArrowLeft, LogOut, Plus, FileText, X as XIcon, Shield, Trash2, UserPlus, Pencil,
 } from 'lucide-react';
 import { supabase, adminLogout, listAdminUsers, createAdminUser, deleteAdminUser, createEvent, createContact, updateEvent, deleteEvent, updateContact, deleteContact } from '../lib/supabase';
-} from 'lucide-react';
-import { supabase, adminLogout, listAdminUsers, createAdminUser, deleteAdminUser, createEvent, createContact } from '../lib/supabase';
 import { fetchAllSiteContent, updateSiteContent } from '../hooks/useSiteContent';
 import Logo from '../components/Logo';
 
@@ -54,10 +52,6 @@ export default function AdminDashboard() {
 
   // Editing states
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
-  const [editingContact, setEditingContact] = useState<ContactItem | null>(null);
-  const [siteContent, setSiteContent] = useState<Array<{id: string; section: string; key: string; value: string}>>([]);
-  const [contentLoading, setContentLoading] = useState(false);
-
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
@@ -211,14 +205,6 @@ export default function AdminDashboard() {
     const { error } = await deleteContact(id);
     if (error) { showToast('Erro ao eliminar contacto'); }
     else { showToast('Contacto eliminado'); fetchData(); }
-  };
-    if (!confirm('Tem certeza que deseja eliminar este administrador?')) return;
-    const { data, error } = await deleteAdminUser(id);
-    if (error || !data) { showToast('Erro ao eliminar administrador'); }
-    else {
-      showToast('Administrador eliminado');
-      loadAdminUsers();
-    }
   };
 
   const statCards = [

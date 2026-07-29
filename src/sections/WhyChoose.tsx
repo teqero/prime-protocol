@@ -1,3 +1,4 @@
+import { useAppContext } from '../context/AppContext';
 import { Check } from 'lucide-react';
 
 const reasons = [
@@ -10,8 +11,11 @@ const reasons = [
 ];
 
 export default function WhyChoose() {
+  const { t, theme } = useAppContext();
+
   return (
-    <section id="whychoose" className="w-full bg-[#0d0f14] py-24 lg:py-32">
+    <section id="whychoose" className="w-full py-24 lg:py-32"
+             style={{ backgroundColor: 'var(--pp-bg)' }}>
       <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
           {/* Content */}
@@ -23,7 +27,8 @@ export default function WhyChoose() {
               </span>
             </div>
 
-            <h2 className="font-serif text-[48px] lg:text-[52px] font-normal text-[#f5f0e8] leading-[1.1] mb-8">
+            <h2 className="font-serif text-[48px] lg:text-[52px] font-normal leading-[1.1] mb-8"
+                style={{ color: 'var(--pp-text)' }}>
               A Prime
               <span className="block font-semibold">Protocol?</span>
             </h2>
@@ -61,11 +66,13 @@ export default function WhyChoose() {
 
             {/* Stats overlay */}
             <div className="absolute bottom-6 left-6 right-6 z-20 grid grid-cols-2 gap-4">
-              <div className="bg-[#0d0f14]/80 backdrop-blur-sm border border-[#2a2520]/40 p-4">
+              <div className="backdrop-blur-sm border p-4"
+                   style={{ backgroundColor: 'rgba(13,15,20,0.8)', borderColor: 'var(--pp-border)' }}>
                 <p className="font-serif text-[28px] font-semibold text-[#c9956b]">98%</p>
                 <p className="text-[10px] text-[#8a7e74] font-sans tracking-wide uppercase">Taxa de Satisfação</p>
               </div>
-              <div className="bg-[#0d0f14]/80 backdrop-blur-sm border border-[#2a2520]/40 p-4">
+              <div className="backdrop-blur-sm border p-4"
+                   style={{ backgroundColor: 'rgba(13,15,20,0.8)', borderColor: 'var(--pp-border)' }}>
                 <p className="font-serif text-[28px] font-semibold text-[#c9956b]">50+</p>
                 <p className="text-[10px] text-[#8a7e74] font-sans tracking-wide uppercase">Parceiros Globais</p>
               </div>

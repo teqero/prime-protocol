@@ -1,6 +1,11 @@
+import { useAppContext } from '../context/AppContext';
+
 export default function WhoWeAre() {
+  const { t, theme } = useAppContext();
+
   return (
-    <section id="whoweare" className="w-full bg-[#111318] py-16 md:py-24 lg:py-32">
+    <section id="whoweare" className="w-full py-16 md:py-24 lg:py-32"
+             style={{ backgroundColor: 'var(--pp-bg-2)' }}>
       <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-12 md:gap-16 lg:gap-20 items-center">
           {/* Left Image */}
@@ -33,7 +38,8 @@ export default function WhoWeAre() {
               </span>
             </div>
 
-            <h2 className="font-serif text-[36px] md:text-[48px] lg:text-[52px] font-normal text-[#f5f0e8] leading-[1.1] mb-8">
+            <h2 className="font-serif text-[36px] md:text-[48px] lg:text-[52px] font-normal leading-[1.1] mb-8"
+                style={{ color: 'var(--pp-text)' }}>
               Quem Somos
             </h2>
 
@@ -48,11 +54,13 @@ export default function WhoWeAre() {
             </p>
 
             {/* Quote box */}
-            <div className="bg-[#16181d] p-6 md:p-8 border-l-2 border-[#c9956b]">
+            <div className="p-6 md:p-8 border-l-2 border-[#c9956b]"
+                 style={{ backgroundColor: 'var(--pp-bg-3)' }}>
               <p className="text-[11px] md:text-[12px] font-serif font-semibold text-[#c9956b] tracking-wide uppercase mb-4">
                 Declaração de Missão
               </p>
-              <p className="font-serif text-[18px] md:text-[20px] lg:text-[22px] text-[#f5f0e8] font-normal leading-[1.5]">
+              <p className="font-serif text-[18px] md:text-[20px] lg:text-[22px] font-normal leading-[1.5]"
+                 style={{ color: 'var(--pp-text)' }}>
                 "Garantimos que a identidade e a dignidade das instituições que servimos sejam perpetuadas com absoluta precisão e delicadeza em cada momento formal."
               </p>
             </div>

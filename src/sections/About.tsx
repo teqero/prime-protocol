@@ -1,8 +1,13 @@
+import { useAppContext } from '../context/AppContext';
 import ScrollReveal from '../components/ScrollReveal';
 
 export default function About() {
+  const { t, theme } = useAppContext();
+  const isDark = theme === 'dark';
+
   return (
-    <section id="about" className="w-full bg-[#0d0f14] py-16 md:py-24 lg:py-32">
+    <section id="about" className="w-full py-16 md:py-24 lg:py-32"
+             style={{ backgroundColor: 'var(--pp-bg)' }}>
       <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-12 md:gap-16 lg:gap-20 items-center">
           {/* Left Content */}
@@ -12,14 +17,15 @@ export default function About() {
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-8 h-[1px] bg-[#c9956b]" />
                 <span className="text-[10px] font-sans font-semibold tracking-[0.2em] uppercase text-[#c9956b]">
-                  A Nossa Essência
+                  {t('about.label')}
                 </span>
               </div>
             </ScrollReveal>
 
             <ScrollReveal delay={100}>
-              <h2 className="font-serif text-[36px] md:text-[48px] lg:text-[52px] font-normal text-[#f5f0e8] leading-[1.1] mb-8">
-                Sobre a Prime Protocol
+              <h2 className="font-serif text-[36px] md:text-[48px] lg:text-[52px] font-normal leading-[1.1] mb-8"
+                  style={{ color: 'var(--pp-text)' }}>
+                {t('about.title')}
               </h2>
             </ScrollReveal>
 
@@ -29,13 +35,13 @@ export default function About() {
 
             <ScrollReveal delay={200}>
               <p className="text-[#8a7e74] font-sans text-[15px] md:text-[16px] leading-[1.7] mb-6">
-                A Prime Protocol é uma firma especializada em protocolo corporativo, cerimonial diplomático e organização de eventos institucionais, fundada para servir o mercado angolano com os mais elevados padrões internacionais.
+                {t('about.p1')}
               </p>
             </ScrollReveal>
 
             <ScrollReveal delay={300}>
               <p className="text-[#6b6560] font-sans text-[13px] md:text-[14px] leading-[1.7] mb-10">
-                Servimos empresas de tecnologia, ministérios governamentais, embaixadas, organismos internacionais e grandes corporações. Cada evento — seja uma cimeira tecnológica, uma cerimónia de Estado, uma receção diplomática ou um encontro ministerial — é executado com rigor absoluto, discrição e mestria protocolar de nível mundial.
+                {t('about.p2')}
               </p>
             </ScrollReveal>
 
@@ -45,7 +51,8 @@ export default function About() {
                 {['Cimeiras Tecnológicas', 'Cerimónias de Estado', 'Receções Diplomáticas', 'Eventos Corporativos'].map((tag) => (
                   <span
                     key={tag}
-                    className="px-4 py-1.5 border border-[#2a2520] text-[#8a7e74] font-sans text-[10px] tracking-wide hover:border-[#c9956b]/40 hover:text-[#c9956b] transition-colors cursor-default"
+                    className="px-4 py-1.5 border text-[#8a7e74] font-sans text-[10px] tracking-wide hover:border-[#c9956b]/40 hover:text-[#c9956b] transition-colors cursor-default"
+                    style={{ borderColor: 'var(--pp-border)' }}
                   >
                     {tag}
                   </span>
@@ -68,12 +75,14 @@ export default function About() {
               </div>
 
               {/* Caption */}
-              <div className="absolute bottom-0 left-0 right-0 z-20 bg-[#0d0f14]/60 backdrop-blur-sm px-6 py-4">
+              <div className="absolute bottom-0 left-0 right-0 z-20 backdrop-blur-sm px-6 py-4"
+                   style={{ backgroundColor: isDark ? 'rgba(13,15,20,0.6)' : 'rgba(245,240,232,0.6)' }}>
                 <p className="text-[10px] font-sans text-[#c9956b] tracking-wide mb-1">
-                  Evento Corporativo · Luanda
+                  {t('about.caption.label')}
                 </p>
-                <p className="font-serif text-[14px] md:text-[16px] text-[#f5f0e8] font-normal">
-                  Excelência em cada detalhe institucional
+                <p className="font-serif text-[14px] md:text-[16px] font-normal"
+                   style={{ color: 'var(--pp-text)' }}>
+                  {t('about.caption.text')}
                 </p>
               </div>
             </div>

@@ -1,7 +1,7 @@
-import { useLang } from '../lib/i18n';
+import { useAppContext } from '../context/AppContext';
 
 export default function LanguageSwitcher() {
-  const { lang, setLang } = useLang();
+  const { lang, setLang } = useAppContext();
 
   return (
     <div className="flex items-center gap-1">

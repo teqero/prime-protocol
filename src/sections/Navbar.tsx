@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-
-const navLinks = [
-  { label: 'Sobre', href: '#about' },
-  { label: 'Serviços', href: '#services' },
-  { label: 'Fundadora', href: '#founder' },
-  { label: 'Contactos', href: '#contact' },
-];
 
 function scrollToSection(href: string) {
   const id = href.replace('#', '');
@@ -19,8 +13,11 @@ function scrollToSection(href: string) {
 }
 
 export default function Navbar() {
+  const { t, theme } = useAppContext();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -34,17 +31,26 @@ export default function Navbar() {
     setMobileOpen(false);
   };
 
+  const navLinks = [
+    { label: t('nav.about'), href: '#about' },
+    { label: t('nav.services'), href: '#services' },
+    { label: t('nav.founder'), href: '#founder' },
+    { label: t('nav.contact'), href: '#contact' },
+  ];
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-[#0d0f14]/95 backdrop-blur-md border-b border-[#2a2520]/40'
+          ? isDark
+            ? 'bg-[#0d0f14]/95 backdrop-blur-md border-b border-[#2a2520]/40'
+            : 'bg-[#f5f0e8]/95 backdrop-blur-md border-b border-[#d4cbbf]/40'
           : 'bg-transparent'
       }`}
     >
       <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
         <nav className="flex items-center justify-between h-[120px]">
-          {/* Logo — nova imagem maior */}
+          {/* Logo */}
           <a
             href="#hero"
             onClick={(e) => handleNavClick(e, '#hero')}
@@ -63,7 +69,11 @@ export default function Navbar() {
                   <a
                     href={link.href}
                     onClick={(e) => handleNavClick(e, link.href)}
-                    className="text-[11px] font-sans font-medium tracking-[0.15em] uppercase text-[#b8b0a4] hover:text-[#f5f0e8] transition-colors duration-300"
+                    className={`text-[11px] font-sans font-medium tracking-[0.15em] uppercase transition-colors duration-300 ${
+                      isDark
+                        ? 'text-[#b8b0a4] hover:text-[#f5f0e8]'
+                        : 'text-[#5c5348] hover:text-[#1a1a1a]'
+                    }`}
                   >
                     {link.label}
                   </a>
@@ -79,7 +89,7 @@ export default function Navbar() {
                 onClick={(e) => handleNavClick(e, '#contact')}
                 className="inline-flex items-center justify-center px-7 py-2.5 bg-[#c9956b] text-[#0d0f14] font-sans font-semibold text-[11px] tracking-wider uppercase hover:bg-[#d4a87a] transition-all duration-300"
               >
-                Agendar
+                {t('nav.schedule')}
               </a>
             </div>
           </div>
@@ -87,7 +97,7 @@ export default function Navbar() {
           {/* Mobile Toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden w-10 h-10 flex items-center justify-center text-[#f5f0e8]"
+            className={`lg:hidden w-10 h-10 flex items-center justify-center ${isDark ? 'text-[#f5f0e8]' : 'text-[#1a1a1a]'}`}
           >
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -100,14 +110,24 @@ export default function Navbar() {
           mobileOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="w-full max-w-[1440px] mx-auto px-10 pb-8 pt-4 border-t border-[#2a2520]/30 bg-[#0d0f14]/95 backdrop-blur-md">
+        <div
+          className={`w-full max-w-[1440px] mx-auto px-10 pb-8 pt-4 border-t backdrop-blur-md ${
+            isDark
+              ? 'border-[#2a2520]/30 bg-[#0d0f14]/95'
+              : 'border-[#d4cbbf]/30 bg-[#f5f0e8]/95'
+          }`}
+        >
           <ul className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <a
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  className="block text-sm font-sans font-medium tracking-[0.15em] uppercase text-[#b8b0a4] hover:text-[#f5f0e8] transition-colors py-2"
+                  className={`block text-sm font-sans font-medium tracking-[0.15em] uppercase transition-colors py-2 ${
+                    isDark
+                      ? 'text-[#b8b0a4] hover:text-[#f5f0e8]'
+                      : 'text-[#5c5348] hover:text-[#1a1a1a]'
+                  }`}
                 >
                   {link.label}
                 </a>
@@ -123,7 +143,7 @@ export default function Navbar() {
             onClick={(e) => handleNavClick(e, '#contact')}
             className="inline-flex items-center justify-center px-7 py-2.5 bg-[#c9956b] text-[#0d0f14] font-sans font-semibold text-[11px] tracking-wider uppercase hover:bg-[#d4a87a] transition-all mt-6 w-full"
           >
-            Agendar
+            {t('nav.schedule')}
           </a>
         </div>
       </div>

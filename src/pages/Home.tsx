@@ -21,7 +21,7 @@ import WhatsAppWidget from '../components/WhatsAppWidget';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#0d0f14]">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--pp-bg)' }}>
       <ScrollProgress />
       <Navbar />
       <HeroParallax />

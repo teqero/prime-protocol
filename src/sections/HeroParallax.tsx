@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
+import { useAppContext } from '../context/AppContext';
 import ScrollReveal from '../components/ScrollReveal';
 import Particles from '../components/Particles';
 import Typewriter from '../components/Typewriter';
@@ -10,6 +11,8 @@ function scrollToSection(id: string) {
 }
 
 export default function HeroParallax() {
+  const { t, theme } = useAppContext();
+  const isDark = theme === 'dark';
   const sectionRef = useRef<HTMLElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const { content } = useSiteContent('hero');
@@ -27,33 +30,30 @@ export default function HeroParallax() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const titlePrime = content.title_prime || 'PRIME';
-  const titleProtocol = content.title_protocol || 'PROTOCOL';
-  const ceoLabel = content.ceo_label || 'Fundadora & CEO';
-  const ceoName = content.ceo_name || 'Lucíria Meury Rodrigues de Sousa';
-  const tagline = content.tagline || 'Protocolo Corporativo · Tecnologia · Governo · Eventos Institucionais';
-  const description = content.description || 'Excelência, Elegância e Profissionalismo em Cada Detalhe Diplomático.';
-  const ctaPrimary = content.cta_primary || 'Agendar Evento';
-  const ctaSecondary = content.cta_secondary || 'Explorar Portfólio';
+  const titlePrime = content.title_prime || t('hero.title1');
+  const titleProtocol = content.title_protocol || t('hero.title2');
+  const ceoLabel = content.ceo_label || t('hero.founder');
+  const ceoName = content.ceo_name || t('hero.name');
+  const tagline = content.tagline || t('hero.sector');
+  const description = content.description || t('hero.desc');
+  const ctaPrimary = content.cta_primary || t('hero.ctaPrimary');
+  const ctaSecondary = content.cta_secondary || t('hero.ctaSecondary');
   const stat1Val = content.stat_1_value || '50+';
-  const stat1Lbl = content.stat_1_label || 'Eventos Realizados';
+  const stat1Lbl = content.stat_1_label || t('hero.stats.events');
   const stat2Val = content.stat_2_value || 'Gov';
-  const stat2Lbl = content.stat_2_label || 'Cerimónias Oficiais';
+  const stat2Lbl = content.stat_2_label || t('hero.stats.clients');
   const stat3Val = content.stat_3_value || 'AOA';
-  const stat3Lbl = content.stat_3_label || 'Luanda, Angola';
-  const badges = [
-    content.badge_1 || 'Cerimonial Institucional',
-    content.badge_2 || 'Protocolo Governamental',
-    content.badge_3 || 'Receções Diplomáticas',
-    content.badge_4 || 'Cimeiras Corporativas',
-    content.badge_5 || 'Eventos de Estado',
-  ];
+  const stat3Lbl = content.stat_3_label || t('hero.badge.location');
+
+  const badgeKeys = ['ceremonial', 'protocol', 'diplomatic', 'corporate', 'state'] as const;
+  const badges = badgeKeys.map((k) => content[`badge_${k}`] || t(`hero.badge.${k}`));
 
   return (
     <section
       ref={sectionRef}
       id="hero"
-      className="relative w-full min-h-screen flex items-center overflow-hidden bg-[#0d0f14]"
+      className="relative w-full min-h-screen flex items-center overflow-hidden"
+      style={{ backgroundColor: 'var(--pp-bg)' }}
     >
       {/* Parallax background layers */}
       <div className="absolute inset-0 z-[0]" style={{ transform: `translateY(${scrollY * 0.2}px)` }}>
@@ -88,12 +88,14 @@ export default function HeroParallax() {
             </ScrollReveal>
 
             <ScrollReveal delay={100}>
-              <h1 className="font-serif text-[56px] md:text-[72px] lg:text-[88px] font-semibold text-[#f5f0e8] leading-[0.95] tracking-tight mb-2">
+              <h1 className="font-serif text-[56px] md:text-[72px] lg:text-[88px] font-semibold leading-[0.95] tracking-tight mb-2"
+                  style={{ color: 'var(--pp-text)' }}>
                 {titlePrime}
               </h1>
             </ScrollReveal>
             <ScrollReveal delay={200}>
-              <h1 className="font-serif text-[56px] md:text-[72px] lg:text-[88px] font-light text-[#f5f0e8] leading-[0.95] tracking-tight mb-8 md:mb-10">
+              <h1 className="font-serif text-[56px] md:text-[72px] lg:text-[88px] font-light leading-[0.95] tracking-tight mb-8 md:mb-10"
+                  style={{ color: 'var(--pp-text)' }}>
                 {titleProtocol}
               </h1>
             </ScrollReveal>
@@ -114,7 +116,7 @@ export default function HeroParallax() {
                 <Typewriter
                   texts={[
                     description,
-                    'Transformamos cada ocasião numa experiência inesquecível.',
+                    t('hero.desc'),
                     'Eventos executivos com sofisticação e prestígio.',
                     'Consultoria de protocolo para governos e empresas.',
                   ]}
@@ -145,17 +147,20 @@ export default function HeroParallax() {
             <ScrollReveal delay={600}>
               <div className="flex gap-6 md:gap-10 items-start">
                 <div className="flex items-center gap-3">
-                  <span className="font-serif text-[24px] md:text-[28px] font-semibold text-[#f5f0e8]">{stat1Val}</span>
+                  <span className="font-serif text-[24px] md:text-[28px] font-semibold"
+                        style={{ color: 'var(--pp-text)' }}>{stat1Val}</span>
                   <p className="text-[9px] md:text-[10px] text-[#8a7e74] font-sans tracking-[0.1em] uppercase leading-tight">{stat1Lbl}</p>
                 </div>
                 <div className="w-px h-8 bg-[#2a2520]" />
                 <div className="flex items-center gap-3">
-                  <span className="font-serif text-[24px] md:text-[28px] font-semibold text-[#f5f0e8]">{stat2Val}</span>
+                  <span className="font-serif text-[24px] md:text-[28px] font-semibold"
+                        style={{ color: 'var(--pp-text)' }}>{stat2Val}</span>
                   <p className="text-[9px] md:text-[10px] text-[#8a7e74] font-sans tracking-[0.1em] uppercase leading-tight">{stat2Lbl}</p>
                 </div>
                 <div className="w-px h-8 bg-[#2a2520] hidden sm:block" />
                 <div className="hidden sm:flex items-center gap-3">
-                  <span className="font-serif text-[24px] md:text-[28px] font-semibold text-[#f5f0e8]">{stat3Val}</span>
+                  <span className="font-serif text-[24px] md:text-[28px] font-semibold"
+                        style={{ color: 'var(--pp-text)' }}>{stat3Val}</span>
                   <p className="text-[9px] md:text-[10px] text-[#8a7e74] font-sans tracking-[0.1em] uppercase leading-tight">{stat3Lbl}</p>
                 </div>
               </div>
@@ -173,10 +178,11 @@ export default function HeroParallax() {
                 <div className="absolute -inset-6 border border-[#c9956b]/10 hidden lg:block" />
                 <img
                   src="/images/ceo-figma.png"
-                  alt="Lucíria Meury Rodrigues de Sousa - Fundadora & CEO"
+                  alt={t('hero.name')}
                   className="w-full h-full object-cover relative z-10"
                 />
-                <div className="absolute -bottom-4 -left-4 bg-[#111318] border border-[#2a2520] px-5 py-4 z-20 max-w-[220px]">
+                <div className="absolute -bottom-4 -left-4 border px-5 py-4 z-20 max-w-[220px]"
+                     style={{ backgroundColor: 'var(--pp-bg-2)', borderColor: 'var(--pp-border)' }}>
                   <div className="flex items-center gap-3 mb-2">
                     <img src="/images/emblem-figma.png" alt="" className="w-8 h-8 object-contain opacity-60" />
                     <span className="font-serif text-[#c9956b] text-sm font-semibold">{stat3Val}</span>
@@ -193,7 +199,8 @@ export default function HeroParallax() {
       </div>
 
       {/* Hero footer badges */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-[#2a2520]/30 bg-[#0d0f14]/80 backdrop-blur-sm">
+      <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-[#2a2520]/30 backdrop-blur-sm"
+           style={{ backgroundColor: isDark ? 'rgba(13,15,20,0.8)' : 'rgba(245,240,232,0.8)' }}>
         <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20 py-4">
           <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
             {badges.map((badge, i) => (

@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useAppContext } from '../context/AppContext';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import emailjs from 'emailjs-com';
 
-// EmailJS config — substituir com os seus valores reais do dashboard EmailJS
+// EmailJS config
 const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || '';
 const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '';
 const EMAILJS_USER_ID = import.meta.env.VITE_EMAILJS_USER_ID || '';
@@ -33,6 +34,7 @@ async function sendAdminNotification(data: { name: string; email: string; phone:
 }
 
 export default function ContactEnhanced() {
+  const { t } = useAppContext();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -67,14 +69,13 @@ export default function ContactEnhanced() {
 
       if (supaError) throw supaError;
 
-      // Send email notification to admin
       await sendAdminNotification(formData);
 
       setSubmitted(true);
       setFormData({ name: '', email: '', phone: '', service: '', message: '' });
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err) {
-      setError('Ocorreu um erro ao enviar. Por favor, tente novamente.');
+      setError(t('contact.error'));
       console.error(err);
     } finally {
       setSubmitting(false);
@@ -82,47 +83,49 @@ export default function ContactEnhanced() {
   };
 
   return (
-    <section id="contact" className="w-full bg-[#111318] py-24 lg:py-32">
+    <section id="contact" className="w-full py-24 lg:py-32"
+             style={{ backgroundColor: 'var(--pp-bg-2)' }}>
       <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="w-12 h-[1px] bg-[#c9956b]" />
             <span className="text-[10px] font-sans font-semibold tracking-[0.2em] uppercase text-[#c9956b]">
-              Entre em Contacto
+              {t('contact.label')}
             </span>
             <div className="w-12 h-[1px] bg-[#c9956b]" />
           </div>
-          <h2 className="font-serif text-[48px] lg:text-[56px] font-normal text-[#f5f0e8] leading-[1.1]">
-            Contactos
+          <h2 className="font-serif text-[48px] lg:text-[56px] font-normal leading-[1.1]"
+              style={{ color: 'var(--pp-text)' }}>
+            {t('contact.title')}
           </h2>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20">
           {/* Contact Info + Map */}
           <div>
-            <h3 className="font-serif text-[24px] font-semibold text-[#f5f0e8] mb-6">
-              Vamos Conversar
+            <h3 className="font-serif text-[24px] font-semibold mb-6"
+                style={{ color: 'var(--pp-text)' }}>
+              {t('contact.subtitle')}
             </h3>
             <p className="text-[#8a7e74] font-sans text-[14px] leading-[1.7] mb-10">
-              Estamos prontos para transformar o seu próximo evento numa experiência
-              inesquecível. Entre em contacto connosco para um orçamento personalizado.
+              {t('contact.desc')}
             </p>
 
             <div className="space-y-6 mb-10">
               {[
-                { icon: MapPin, label: 'Localização', value: 'Luanda, Angola' },
-                { icon: Phone, label: 'Telefone', value: '+244 936 004 912' },
-                { icon: Mail, label: 'Email', value: 'primeprotocol.ao@gmail.com' },
-                { icon: Mail, label: 'Email', value: 'info@primeprotocol.ao' },
-                { icon: Clock, label: 'Horário', value: 'Seg — Sex: 08h00 — 18h00' },
-              ].map((item) => (
-                <div key={item.label} className="flex items-start gap-4 group">
+                { icon: MapPin, label: t('contact.location'), value: t('contact.locValue') },
+                { icon: Phone, label: t('contact.phoneLabel'), value: t('contact.phoneValue') },
+                { icon: Mail, label: t('contact.emailLabel'), value: t('contact.emailValue') },
+                { icon: Clock, label: t('contact.hoursLabel'), value: t('contact.hoursValue') },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-start gap-4 group">
                   <div className="w-10 h-10 bg-[#c9956b]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#c9956b]/20 transition-colors">
                     <item.icon size={18} className="text-[#c9956b]" />
                   </div>
                   <div>
-                    <p className="font-sans font-medium text-[#f5f0e8] text-[13px] mb-0.5">{item.label}</p>
+                    <p className="font-sans font-medium text-[13px] mb-0.5"
+                       style={{ color: 'var(--pp-text)' }}>{item.label}</p>
                     <p className="text-[#8a7e74] font-sans text-[13px]">{item.value}</p>
                   </div>
                 </div>
@@ -151,15 +154,20 @@ export default function ContactEnhanced() {
           {/* Contact Form */}
           <div>
             {submitted ? (
-              <div className="bg-[#0d0f14] border border-[#c9956b]/30 p-10 text-center">
+              <div className="border border-[#c9956b]/30 p-10 text-center"
+                   style={{ backgroundColor: 'var(--pp-bg)' }}>
                 <CheckCircle size={48} className="text-[#c9956b] mx-auto mb-4" />
-                <h3 className="font-serif text-2xl text-[#f5f0e8] mb-2">Mensagem Enviada!</h3>
-                <p className="text-[#8a7e74] font-sans text-sm">A nossa equipa entrará em contacto brevemente.</p>
+                <h3 className="font-serif text-2xl mb-2"
+                    style={{ color: 'var(--pp-text)' }}>{t('contact.successTitle')}</h3>
+                <p className="text-[#8a7e74] font-sans text-sm">{t('contact.successDesc')}</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="bg-[#0d0f14] border border-[#2a2520]/40 p-10">
-                <h3 className="font-serif text-[20px] font-semibold text-[#f5f0e8] mb-8">
-                  Solicitar Orçamento
+              <form onSubmit={handleSubmit}
+                    className="border p-10"
+                    style={{ backgroundColor: 'var(--pp-bg)', borderColor: 'var(--pp-border)' }}>
+                <h3 className="font-serif text-[20px] font-semibold mb-8"
+                    style={{ color: 'var(--pp-text)' }}>
+                  {t('contact.formTitle')}
                 </h3>
 
                 {error && (
@@ -171,7 +179,7 @@ export default function ContactEnhanced() {
                 <div className="space-y-5">
                   <div>
                     <label className="block text-[10px] font-sans font-medium text-[#6b6560] uppercase tracking-[0.15em] mb-2">
-                      Nome Completo *
+                      {t('contact.name')} *
                     </label>
                     <input
                       type="text"
@@ -179,15 +187,16 @@ export default function ContactEnhanced() {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full bg-[#16181d] border border-[#2a2520] px-4 py-3 text-[#f5f0e8] font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
-                      placeholder="O seu nome"
+                      className="w-full border px-4 py-3 font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+                      style={{ backgroundColor: 'var(--pp-bg-3)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
+                      placeholder={t('contact.name')}
                     />
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-[10px] font-sans font-medium text-[#6b6560] uppercase tracking-[0.15em] mb-2">
-                        Email *
+                        {t('contact.email')} *
                       </label>
                       <input
                         type="email"
@@ -195,20 +204,22 @@ export default function ContactEnhanced() {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full bg-[#16181d] border border-[#2a2520] px-4 py-3 text-[#f5f0e8] font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+                        className="w-full border px-4 py-3 font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+                        style={{ backgroundColor: 'var(--pp-bg-3)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
                         placeholder="email@exemplo.com"
                       />
                     </div>
                     <div>
                       <label className="block text-[10px] font-sans font-medium text-[#6b6560] uppercase tracking-[0.15em] mb-2">
-                        Telefone
+                        {t('contact.phone')}
                       </label>
                       <input
                         type="tel"
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full bg-[#16181d] border border-[#2a2520] px-4 py-3 text-[#f5f0e8] font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+                        className="w-full border px-4 py-3 font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+                        style={{ backgroundColor: 'var(--pp-bg-3)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
                         placeholder="+244 ..."
                       />
                     </div>
@@ -216,36 +227,38 @@ export default function ContactEnhanced() {
 
                   <div>
                     <label className="block text-[10px] font-sans font-medium text-[#6b6560] uppercase tracking-[0.15em] mb-2">
-                      Tipo de Serviço *
+                      {t('contact.service')} *
                     </label>
                     <select
                       name="service"
                       value={formData.service}
                       onChange={handleChange}
                       required
-                      className="w-full bg-[#16181d] border border-[#2a2520] px-4 py-3 text-[#f5f0e8] font-sans text-[13px] focus:border-[#c9956b]/50 focus:outline-none transition-colors appearance-none"
+                      className="w-full border px-4 py-3 font-sans text-[13px] focus:border-[#c9956b]/50 focus:outline-none transition-colors appearance-none"
+                      style={{ backgroundColor: 'var(--pp-bg-3)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
                     >
-                      <option value="" className="bg-[#16181d]">Selecione um serviço</option>
-                      <option value="eventos-corporativos" className="bg-[#16181d]">Organização de Cimeiras e Eventos Corporativos</option>
-                      <option value="cerimonial" className="bg-[#16181d]">Cerimonial & Comunicação Institucional</option>
-                      <option value="protocolo" className="bg-[#16181d]">Protocolo Diplomático</option>
-                      <option value="governamentais" className="bg-[#16181d]">Eventos Governamentais e de Estado</option>
-                      <option value="consultoria" className="bg-[#16181d]">Consultoria Estratégica em Protocolo</option>
-                      <option value="formacao" className="bg-[#16181d]">Formação em Protocolo & Etiqueta</option>
-                      <option value="outro" className="bg-[#16181d]">Outro</option>
+                      <option value="" style={{ backgroundColor: 'var(--pp-bg-3)' }}>{t('contact.selectService')}</option>
+                      <option value="eventos-corporativos" style={{ backgroundColor: 'var(--pp-bg-3)' }}>{t('contact.services.corporate')}</option>
+                      <option value="cerimonial" style={{ backgroundColor: 'var(--pp-bg-3)' }}>{t('contact.services.ceremonial')}</option>
+                      <option value="protocolo" style={{ backgroundColor: 'var(--pp-bg-3)' }}>{t('contact.services.diplomatic')}</option>
+                      <option value="governamentais" style={{ backgroundColor: 'var(--pp-bg-3)' }}>{t('contact.services.government')}</option>
+                      <option value="consultoria" style={{ backgroundColor: 'var(--pp-bg-3)' }}>{t('contact.services.consulting')}</option>
+                      <option value="formacao" style={{ backgroundColor: 'var(--pp-bg-3)' }}>{t('contact.services.training')}</option>
+                      <option value="outro" style={{ backgroundColor: 'var(--pp-bg-3)' }}>{t('contact.services.other')}</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-sans font-medium text-[#6b6560] uppercase tracking-[0.15em] mb-2">
-                      Mensagem
+                      {t('contact.message')}
                     </label>
                     <textarea
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
                       rows={4}
-                      className="w-full bg-[#16181d] border border-[#2a2520] px-4 py-3 text-[#f5f0e8] font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors resize-none"
+                      className="w-full border px-4 py-3 font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors resize-none"
+                      style={{ backgroundColor: 'var(--pp-bg-3)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
                       placeholder="Descreva o seu evento ou necessidade..."
                     />
                   </div>
@@ -261,11 +274,11 @@ export default function ContactEnhanced() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        A Enviar...
+                        {t('contact.sending')}
                       </span>
                     ) : (
                       <>
-                        Enviar Mensagem
+                        {t('contact.send')}
                         <Send size={14} className="ml-2" />
                       </>
                     )}

@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useAppContext } from '../context/AppContext';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { adminLogin } from '../lib/supabase';
 import Logo from '../components/Logo';
 
 export default function Login() {
+  const { t } = useAppContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +21,7 @@ export default function Login() {
       const { ok, data } = await adminLogin(email, password);
 
       if (!ok || !data.token) {
-        setError(data.error || 'Email ou palavra-passe incorretos.');
+        setError(data.error || t('login.error'));
         setLoading(false);
         return;
       }
@@ -27,19 +29,21 @@ export default function Login() {
       localStorage.setItem('pp_admin_token', data.token);
       window.location.href = '/admin';
     } catch {
-      setError('Erro ao entrar. Tente novamente.');
+      setError(t('login.error'));
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0f14] flex items-center justify-center px-6">
+    <div className="min-h-screen flex items-center justify-center px-6"
+         style={{ backgroundColor: 'var(--pp-bg)' }}>
       <div className="w-full max-w-[400px]">
         <div className="text-center mb-10">
           <div className="w-16 h-16 rounded-full border border-[#c9956b]/40 flex items-center justify-center mx-auto mb-4">
             <Logo size={44} />
           </div>
-          <h1 className="font-serif text-2xl font-semibold text-[#f5f0e8] tracking-wide uppercase">
+          <h1 className="font-serif text-2xl font-semibold tracking-wide uppercase"
+              style={{ color: 'var(--pp-text)' }}>
             Prime Protocol
           </h1>
           <p className="text-[#8a7e74] font-sans text-sm mt-2">
@@ -56,21 +60,22 @@ export default function Login() {
 
           <div>
             <label className="block text-[10px] font-sans font-medium text-[#6b6560] uppercase tracking-[0.15em] mb-2">
-              Email
+              {t('login.email')}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-[#16181d] border border-[#2a2520] px-4 py-3 text-[#f5f0e8] font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+              className="w-full border px-4 py-3 font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+              style={{ backgroundColor: 'var(--pp-bg-3)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
               placeholder="admin@primeprotocol.ao"
             />
           </div>
 
           <div>
             <label className="block text-[10px] font-sans font-medium text-[#6b6560] uppercase tracking-[0.15em] mb-2">
-              Palavra-passe
+              {t('login.password')}
             </label>
             <div className="relative">
               <input
@@ -78,13 +83,14 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full bg-[#16181d] border border-[#2a2520] px-4 py-3 pr-10 text-[#f5f0e8] font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+                className="w-full border px-4 py-3 pr-10 font-sans text-[13px] placeholder:text-[#6b6560]/50 focus:border-[#c9956b]/50 focus:outline-none transition-colors"
+                style={{ backgroundColor: 'var(--pp-bg-3)', borderColor: 'var(--pp-border)', color: 'var(--pp-text)' }}
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b6560] hover:text-[#f5f0e8]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b6560] hover:text-[var(--pp-text)]"
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -106,7 +112,7 @@ export default function Login() {
               </span>
             ) : (
               <>
-                Entrar
+                {t('login.submit')}
                 <LogIn size={14} className="ml-2" />
               </>
             )}

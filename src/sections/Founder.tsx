@@ -1,8 +1,13 @@
+import { useAppContext } from '../context/AppContext';
 import { Linkedin, Instagram, Mail, Award, Globe } from 'lucide-react';
 
 export default function Founder() {
+  const { t, theme } = useAppContext();
+  const isDark = theme === 'dark';
+
   return (
-    <section id="founder" className="w-full bg-[#0d0f14] py-24 lg:py-32">
+    <section id="founder" className="w-full py-24 lg:py-32"
+             style={{ backgroundColor: 'var(--pp-bg)' }}>
       <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
           {/* Image */}
@@ -11,7 +16,7 @@ export default function Founder() {
               <div className="absolute -top-3 -left-3 w-full h-full border border-[#c9956b]/20" />
               <img
                 src="/images/founder.jpg"
-                alt="Lucíria Meury Rodrigues de Sousa"
+                alt={t('hero.name')}
                 className="w-full h-full object-cover relative z-10"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0f14]/40 via-transparent to-transparent z-10" />
@@ -23,11 +28,12 @@ export default function Founder() {
             <div className="flex items-center gap-3 mb-8">
               <div className="w-8 h-[1px] bg-[#c9956b]" />
               <span className="text-[10px] font-sans font-semibold tracking-[0.2em] uppercase text-[#c9956b]">
-                A Nossa Fundadora
+                {t('founder.label')}
               </span>
             </div>
 
-            <h2 className="font-serif text-[42px] lg:text-[48px] font-normal text-[#f5f0e8] leading-[1.1] mb-1">
+            <h2 className="font-serif text-[42px] lg:text-[48px] font-normal leading-[1.1] mb-1"
+                style={{ color: 'var(--pp-text)' }}>
               Lucíria Meury
             </h2>
             <h3 className="font-serif text-[28px] lg:text-[32px] font-semibold text-[#c9956b] mb-8">

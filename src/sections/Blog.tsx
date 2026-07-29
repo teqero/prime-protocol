@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAppContext } from '../context/AppContext';
 import { Calendar, ArrowUpRight, Clock, X } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 
@@ -30,6 +31,7 @@ const articles = [
 ];
 
 export default function Blog() {
+  const { t, theme } = useAppContext();
   const [comingSoon, setComingSoon] = useState(false);
 
   const showComingSoon = (e: React.MouseEvent) => {
@@ -39,7 +41,8 @@ export default function Blog() {
   };
 
   return (
-    <section id="blog" className="w-full bg-[#0d0f14] py-24 lg:py-32 relative">
+    <section id="blog" className="w-full py-24 lg:py-32 relative"
+             style={{ backgroundColor: 'var(--pp-bg)' }}>
       {/* Coming Soon Toast */}
       {comingSoon && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-[#c9956b] text-[#0d0f14] px-6 py-3 font-sans text-sm font-semibold tracking-wide shadow-lg animate-in fade-in slide-in-from-top-4 duration-300 flex items-center gap-3">
@@ -63,7 +66,8 @@ export default function Blog() {
               </div>
             </ScrollReveal>
             <ScrollReveal delay={100}>
-              <h2 className="font-serif text-[48px] lg:text-[56px] font-normal text-[#f5f0e8] leading-[1.1]">
+              <h2 className="font-serif text-[48px] lg:text-[56px] font-normal leading-[1.1]"
+                  style={{ color: 'var(--pp-text)' }}>
                 Blog & <span className="font-semibold">Notícias</span>
               </h2>
             </ScrollReveal>
@@ -83,7 +87,8 @@ export default function Blog() {
         <div className="grid md:grid-cols-3 gap-6">
           {articles.map((article, i) => (
             <ScrollReveal key={i} delay={i * 150}>
-              <article className="group bg-[#111318] border border-[#2a2520]/40 overflow-hidden hover:border-[#c9956b]/20 transition-all duration-500">
+              <article className="group border overflow-hidden hover:border-[#c9956b]/20 transition-all duration-500"
+                       style={{ backgroundColor: 'var(--pp-bg-2)', borderColor: 'var(--pp-border)' }}>
                 {/* Image */}
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <img
@@ -111,7 +116,8 @@ export default function Blog() {
                     </span>
                   </div>
 
-                  <h3 className="font-serif text-[18px] lg:text-[20px] text-[#f5f0e8] font-semibold leading-[1.3] mb-3 group-hover:text-[#c9956b] transition-colors duration-300">
+                  <h3 className="font-serif text-[18px] lg:text-[20px] font-semibold leading-[1.3] mb-3 group-hover:text-[#c9956b] transition-colors duration-300"
+                      style={{ color: 'var(--pp-text)' }}>
                     {article.title}
                   </h3>
 
