@@ -44,14 +44,14 @@ export default function Navbar() {
     >
       <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
         <nav className="flex items-center justify-between h-[120px]">
-          {/* Logo — apenas a imagem do Figma, sem texto */}
+          {/* Logo — nova imagem maior */}
           <a
             href="#hero"
             onClick={(e) => handleNavClick(e, '#hero')}
             className="flex items-center gap-3 group"
           >
-            <div className="w-12 h-12 rounded-full border border-[#c9956b]/40 flex items-center justify-center overflow-hidden">
-              <img src="/images/logo-figma.png" alt="Prime Protocol" className="w-10 h-10 object-contain" />
+            <div className="w-16 h-16 rounded-full border border-[#c9956b]/40 flex items-center justify-center overflow-hidden">
+              <img src="/images/logo-icon-120.png" alt="Prime Protocol" className="w-14 h-14 object-contain" />
             </div>
           </a>
 
