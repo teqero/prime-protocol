@@ -15,18 +15,27 @@ export default function Login() {
     setLoading(true);
     setError('');
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      setError('Email ou palavra-passe incorretos.');
-    } else {
-      window.location.href = '/admin';
+    if (signInError) {
+      console.error('Login error:', signInError);
+      setError(signInError.message === 'Invalid login credentials'
+        ? 'Email ou palavra-passe incorretos.'
+        : 'Erro ao entrar: ' + signInError.message);
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    if (data.session) {
+      // Force page reload so ProtectedRoute picks up the session
+      window.location.href = '/admin';
+    } else {
+      setError('Sessão não criada. Tente novamente.');
+      setLoading(false);
+    }
   };
 
   return (
