@@ -1,6 +1,36 @@
 import { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import emailjs from 'emailjs-com';
+
+// EmailJS config — substituir com os seus valores reais do dashboard EmailJS
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || '';
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '';
+const EMAILJS_USER_ID = import.meta.env.VITE_EMAILJS_USER_ID || '';
+
+async function sendAdminNotification(data: { name: string; email: string; phone: string; service: string; message: string }) {
+  if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_USER_ID) {
+    console.warn('EmailJS não configurado. Configure VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID e VITE_EMAILJS_USER_ID no .env');
+    return;
+  }
+  try {
+    await emailjs.send(
+      EMAILJS_SERVICE_ID,
+      EMAILJS_TEMPLATE_ID,
+      {
+        from_name: data.name,
+        from_email: data.email,
+        phone: data.phone || 'N/A',
+        service: data.service,
+        message: data.message || 'Sem mensagem',
+        to_email: 'admin@primeprotocol.ao',
+      },
+      EMAILJS_USER_ID
+    );
+  } catch (err) {
+    console.error('Erro ao enviar email:', err);
+  }
+}
 
 export default function ContactEnhanced() {
   const [formData, setFormData] = useState({
@@ -36,6 +66,9 @@ export default function ContactEnhanced() {
         });
 
       if (supaError) throw supaError;
+
+      // Send email notification to admin
+      await sendAdminNotification(formData);
 
       setSubmitted(true);
       setFormData({ name: '', email: '', phone: '', service: '', message: '' });
