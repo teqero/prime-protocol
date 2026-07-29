@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import Logo from '../components/Logo';
 
 const navLinks = [
   { label: 'Sobre', href: '#about' },
@@ -45,7 +44,7 @@ export default function Navbar() {
     >
       <div className="w-full max-w-[1440px] mx-auto px-10 lg:px-20">
         <nav className="flex items-center justify-between h-[120px]">
-          {/* Logo */}
+          {/* Logo — apenas a imagem do Figma, sem texto */}
           <a
             href="#hero"
             onClick={(e) => handleNavClick(e, '#hero')}
@@ -53,31 +52,6 @@ export default function Navbar() {
           >
             <div className="w-12 h-12 rounded-full border border-[#c9956b]/40 flex items-center justify-center overflow-hidden">
               <img src="/images/logo-figma.png" alt="Prime Protocol" className="w-10 h-10 object-contain" />
-            </div>
-            <div>
-              <span className="font-serif text-[22px] font-semibold text-[#f5f0e8] tracking-[0.1em] uppercase">
-                PRIME PROTOCOL
-              </span>
-              <span className="block text-[9px] text-[#c9956b] font-sans tracking-[0.2em] uppercase -mt-0.5">
-                Angola · Since 2020
-              </span>
-            </div>
-          </a>
-          <a
-            href="#hero"
-            onClick={(e) => handleNavClick(e, '#hero')}
-            className="flex items-center gap-3 group"
-          >
-            <div className="w-16 h-16 rounded-full border border-[#c9956b]/40 flex items-center justify-center">
-              <Logo size={44} />
-            </div>
-            <div>
-              <span className="font-serif text-[22px] font-semibold text-[#f5f0e8] tracking-[0.1em] uppercase">
-                PRIME PROTOCOL
-              </span>
-              <span className="block text-[9px] text-[#c9956b] font-sans tracking-[0.2em] uppercase -mt-0.5">
-                Angola · Since 2020
-              </span>
             </div>
           </a>
 
