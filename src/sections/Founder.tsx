@@ -79,7 +79,7 @@ export default function Founder() {
                 <Instagram size={16} />
               </a>
               <a
-                href="mailto:info@primeprotocol.ao"
+                href="mailto:primeprotocol.ao@gmail.com"
                 aria-label="Email"
                 className="w-10 h-10 border border-[#2a2520] flex items-center justify-center text-[#6b6560] hover:text-[#c9956b] hover:border-[#c9956b]/40 transition-all"
               >

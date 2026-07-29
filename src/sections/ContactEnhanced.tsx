@@ -23,7 +23,7 @@ async function sendAdminNotification(data: { name: string; email: string; phone:
         phone: data.phone || 'N/A',
         service: data.service,
         message: data.message || 'Sem mensagem',
-        to_email: 'admin@primeprotocol.ao',
+        to_email: 'primeprotocol.ao@gmail.com',
       },
       EMAILJS_USER_ID
     );
@@ -112,7 +112,8 @@ export default function ContactEnhanced() {
             <div className="space-y-6 mb-10">
               {[
                 { icon: MapPin, label: 'Localização', value: 'Luanda, Angola' },
-                { icon: Phone, label: 'Telefone', value: '+244 923 456 789' },
+                { icon: Phone, label: 'Telefone', value: '+244 936 004 912' },
+                { icon: Mail, label: 'Email', value: 'primeprotocol.ao@gmail.com' },
                 { icon: Mail, label: 'Email', value: 'info@primeprotocol.ao' },
                 { icon: Clock, label: 'Horário', value: 'Seg — Sex: 08h00 — 18h00' },
               ].map((item) => (

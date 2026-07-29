@@ -8,9 +8,9 @@ export default function ThemeToggle() {
     const saved = localStorage.getItem('theme');
     if (saved === 'light') {
       setIsDark(false);
-      document.documentElement.classList.remove('dark');
+      document.body.classList.add('light-mode');
     } else {
-      document.documentElement.classList.add('dark');
+      document.body.classList.remove('light-mode');
     }
   }, []);
 
@@ -18,10 +18,10 @@ export default function ThemeToggle() {
     const newDark = !isDark;
     setIsDark(newDark);
     if (newDark) {
-      document.documentElement.classList.add('dark');
+      document.body.classList.remove('light-mode');
       localStorage.setItem('theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      document.body.classList.add('light-mode');
       localStorage.setItem('theme', 'light');
     }
   };
