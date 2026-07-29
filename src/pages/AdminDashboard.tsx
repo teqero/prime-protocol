@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
-  LayoutDashboard, Calendar, Users, BarChart3, Settings, Bell, Search, Menu, X,
+  LayoutDashboard, Calendar, Users, BarChart3, Settings, Bell, Search, Menu, X, PenLine,
   TrendingUp, TrendingDown, DollarSign, Briefcase, CheckCircle, Clock, AlertCircle,
   ArrowLeft, LogOut, Plus, FileText, X as XIcon,
 } from 'lucide-react';
 import { supabase, adminLogout } from '../lib/supabase';
+import { fetchAllSiteContent, updateSiteContent } from '../hooks/useSiteContent';
 import Logo from '../components/Logo';
 
 type Event = { id: string; name: string; event_date: string; status: string; client: string; event_type: string };
@@ -24,6 +25,8 @@ export default function AdminDashboard() {
   const [showNewEventModal, setShowNewEventModal] = useState(false);
   const [showNewClientModal, setShowNewClientModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [siteContent, setSiteContent] = useState<Array<{id: string; section: string; key: string; value: string}>>([]);
+  const [contentLoading, setContentLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -58,16 +61,24 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     const token = localStorage.getItem('pp_admin_token');
-    if (token) {
-      await adminLogout(token);
-    }
+    if (token) { await adminLogout(token); }
     localStorage.removeItem('pp_admin_token');
     window.location.href = '/login';
   };
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
+  const loadSiteContent = async () => {
+    setContentLoading(true);
+    const { data, error } = await fetchAllSiteContent();
+    if (!error) setSiteContent(data);
+    setContentLoading(false);
+  };
+
+  const handleContentSave = async (_id: string, section: string, key: string, value: string) => {
+    const { error } = await updateSiteContent(section, key, value);
+    if (error) { showToast('Erro ao guardar'); }
+    else { showToast('Conteúdo actualizado'); loadSiteContent(); }
   };
 
   const statCards = [
@@ -86,15 +97,24 @@ export default function AdminDashboard() {
     { icon: Calendar, label: 'Eventos', id: 'events' },
     { icon: Users, label: 'Clientes', id: 'clients' },
     { icon: BarChart3, label: 'Relatórios', id: 'reports' },
+    { icon: PenLine, label: 'Conteúdo', id: 'content' },
     { icon: Settings, label: 'Configurações', id: 'settings' },
   ];
 
   const filteredEvents = events.filter(e => e.name.toLowerCase().includes(searchQuery.toLowerCase()) || e.client.toLowerCase().includes(searchQuery.toLowerCase()));
   const filteredContacts = allContacts.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  const tabTitles: Record<string, { pre: string; post: string }> = {
+    dashboard: { pre: 'Painel de ', post: 'Controlo' },
+    events: { pre: 'Gestão de ', post: 'Eventos' },
+    clients: { pre: 'Gestão de ', post: 'Clientes' },
+    reports: { pre: 'Relatórios ', post: 'e Estatísticas' },
+    content: { pre: 'Gestão de ', post: 'Conteúdo' },
+    settings: { pre: 'Configurações ', post: 'do Sistema' },
+  };
+
   return (
     <div className="min-h-screen bg-pp-dark-2 text-pp-cream font-sans">
-      {/* Toast */}
       {toast && (
         <div className="fixed top-6 right-6 z-[70] bg-pp-gold text-pp-dark px-5 py-3 font-sans text-sm font-semibold shadow-lg flex items-center gap-3">
           <span>{toast}</span>
@@ -102,7 +122,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* New Event Modal */}
       {showNewEventModal && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
           <div className="bg-pp-dark border border-pp-border/30 w-full max-w-md p-6">
@@ -111,14 +130,11 @@ export default function AdminDashboard() {
               <button onClick={() => setShowNewEventModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
             </div>
             <p className="text-pp-cream-dim text-sm mb-4">Funcionalidade em desenvolvimento. Em breve poderá criar eventos directamente no painel.</p>
-            <button onClick={() => { setShowNewEventModal(false); showToast('Funcionalidade em desenvolvimento'); }} className="w-full py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">
-              Entendido
-            </button>
+            <button onClick={() => { setShowNewEventModal(false); showToast('Funcionalidade em desenvolvimento'); }} className="w-full py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Entendido</button>
           </div>
         </div>
       )}
 
-      {/* New Client Modal */}
       {showNewClientModal && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
           <div className="bg-pp-dark border border-pp-border/30 w-full max-w-md p-6">
@@ -127,31 +143,23 @@ export default function AdminDashboard() {
               <button onClick={() => setShowNewClientModal(false)} className="text-pp-cream-dim hover:text-pp-cream"><XIcon size={18} /></button>
             </div>
             <p className="text-pp-cream-dim text-sm mb-4">Funcionalidade em desenvolvimento. Em breve poderá adicionar clientes directamente no painel.</p>
-            <button onClick={() => { setShowNewClientModal(false); showToast('Funcionalidade em desenvolvimento'); }} className="w-full py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">
-              Entendido
-            </button>
+            <button onClick={() => { setShowNewClientModal(false); showToast('Funcionalidade em desenvolvimento'); }} className="w-full py-2.5 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Entendido</button>
           </div>
         </div>
       )}
 
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-pp-dark border-b border-pp-border/20 flex items-center justify-between px-4 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full border border-pp-gold/40 flex items-center justify-center">
-            <Logo size={28} />
-          </div>
+          <div className="w-8 h-8 rounded-full border border-pp-gold/40 flex items-center justify-center"><Logo size={28} /></div>
           <span className="font-serif text-sm font-semibold uppercase">Prime Protocol</span>
         </div>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-pp-cream">
-          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-pp-cream">{sidebarOpen ? <X size={24} /> : <Menu size={24} />}</button>
       </div>
 
       <div className="flex pt-16 lg:pt-0">
         <aside className={`fixed lg:sticky top-0 left-0 z-40 w-64 h-screen bg-pp-dark border-r border-pp-border/20 flex-shrink-0 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <div className="p-6 border-b border-pp-border/20 hidden lg:flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full border border-pp-gold/40 flex items-center justify-center">
-              <Logo size={32} />
-            </div>
+            <div className="w-10 h-10 rounded-full border border-pp-gold/40 flex items-center justify-center"><Logo size={32} /></div>
             <div>
               <span className="font-serif text-sm font-semibold uppercase block">Prime Protocol</span>
               <span className="text-[10px] text-pp-cream-dim tracking-wider">Painel Administrativo</span>
@@ -160,27 +168,17 @@ export default function AdminDashboard() {
 
           <nav className="p-4 space-y-1">
             {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-pp-gold/10 text-pp-gold' : 'text-pp-cream-muted hover:bg-pp-dark-3 hover:text-pp-cream'}`}
-              >
+              <button key={item.id} onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium transition-colors ${activeTab === item.id ? 'bg-pp-gold/10 text-pp-gold' : 'text-pp-cream-muted hover:bg-pp-dark-3 hover:text-pp-cream'}`}>
                 <item.icon size={18} /> {item.label}
               </button>
             ))}
           </nav>
 
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-pp-border/20">
-            <a href="/" className="flex items-center gap-2 px-4 py-2 text-[11px] text-pp-cream-dim hover:text-pp-gold transition-colors mb-2">
-              <ArrowLeft size={14} /> Voltar ao site
-            </a>
-            <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-[11px] text-red-400 hover:text-red-300 transition-colors mb-2 w-full">
-              <LogOut size={14} /> Sair
-            </button>
+            <a href="/" className="flex items-center gap-2 px-4 py-2 text-[11px] text-pp-cream-dim hover:text-pp-gold transition-colors mb-2"><ArrowLeft size={14} /> Voltar ao site</a>
+            <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-[11px] text-red-400 hover:text-red-300 transition-colors mb-2 w-full"><LogOut size={14} /> Sair</button>
             <div className="flex items-center gap-3 px-4 py-3">
-              <div className="w-9 h-9 rounded-full bg-pp-gold/20 flex items-center justify-center">
-                <span className="font-serif text-sm text-pp-gold font-semibold">LM</span>
-              </div>
+              <div className="w-9 h-9 rounded-full bg-pp-gold/20 flex items-center justify-center"><span className="font-serif text-sm text-pp-gold font-semibold">LM</span></div>
               <div>
                 <p className="text-sm font-medium text-pp-cream">Lucíria Meury Rodrigues de Sousa</p>
                 <p className="text-[10px] text-pp-cream-dim">Administrador</p>
@@ -190,35 +188,17 @@ export default function AdminDashboard() {
         </aside>
 
         <main className="flex-1 min-w-0 p-6 lg:p-10">
-          {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="font-serif text-2xl lg:text-3xl font-light text-pp-cream">
-                {activeTab === 'dashboard' && 'Painel de '}
-                {activeTab === 'events' && 'Gestão de '}
-                {activeTab === 'clients' && 'Gestão de '}
-                {activeTab === 'reports' && 'Relatórios '}
-                {activeTab === 'settings' && 'Configurações '}
-                <span className="font-semibold">
-                  {activeTab === 'dashboard' && 'Controlo'}
-                  {activeTab === 'events' && 'Eventos'}
-                  {activeTab === 'clients' && 'Clientes'}
-                  {activeTab === 'reports' && 'e Estatísticas'}
-                  {activeTab === 'settings' && 'do Sistema'}
-                </span>
+                {tabTitles[activeTab]?.pre}<span className="font-semibold">{tabTitles[activeTab]?.post}</span>
               </h1>
               <p className="text-pp-cream-dim text-sm mt-1">Bem-vinda de volta, Lucíria</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="relative hidden sm:block">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-pp-cream-dim" />
-                <input
-                  type="text"
-                  placeholder="Pesquisar..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-pp-dark-3 border border-pp-border/30 rounded-sm pl-9 pr-4 py-2 text-sm text-pp-cream placeholder:text-pp-cream-dim/50 focus:border-pp-gold/50 focus:outline-none w-64"
-                />
+                <input type="text" placeholder="Pesquisar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-pp-dark-3 border border-pp-border/30 rounded-sm pl-9 pr-4 py-2 text-sm text-pp-cream placeholder:text-pp-cream-dim/50 focus:border-pp-gold/50 focus:outline-none w-64" />
               </div>
               <button className="w-10 h-10 rounded-sm bg-pp-dark-3 border border-pp-border/30 flex items-center justify-center text-pp-cream-dim hover:text-pp-gold relative">
                 <Bell size={18} />
@@ -227,7 +207,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* ===== DASHBOARD TAB ===== */}
           {activeTab === 'dashboard' && (
             <>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -235,9 +214,7 @@ export default function AdminDashboard() {
                   <div key={i} className="card-dark p-5">
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-10 h-10 rounded-sm bg-pp-gold/10 flex items-center justify-center"><stat.icon size={18} className="text-pp-gold" /></div>
-                      <div className={`flex items-center gap-1 text-xs ${stat.up ? 'text-green-400' : 'text-red-400'}`}>
-                        {stat.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}{stat.change}
-                      </div>
+                      <div className={`flex items-center gap-1 text-xs ${stat.up ? 'text-green-400' : 'text-red-400'}`}>{stat.up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}{stat.change}</div>
                     </div>
                     <p className="font-serif text-2xl font-semibold text-pp-cream">{stat.value}</p>
                     <p className="text-xs text-pp-cream-dim font-sans mt-1">{stat.label}</p>
@@ -338,25 +315,18 @@ export default function AdminDashboard() {
             </>
           )}
 
-          {/* ===== EVENTS TAB ===== */}
           {activeTab === 'events' && (
             <div className="card-dark p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-serif text-lg font-semibold text-pp-cream">Todos os Eventos</h3>
-                <button onClick={() => setShowNewEventModal(true)} className="flex items-center gap-2 px-4 py-2 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">
-                  <Plus size={14} /> Novo Evento
-                </button>
+                <button onClick={() => setShowNewEventModal(true)} className="flex items-center gap-2 px-4 py-2 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all"><Plus size={14} /> Novo Evento</button>
               </div>
               {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : filteredEvents.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">{searchQuery ? 'Nenhum evento encontrado' : 'Sem eventos'}</div> : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
-                        <th className="pb-3 font-medium">Nome</th>
-                        <th className="pb-3 font-medium">Cliente</th>
-                        <th className="pb-3 font-medium">Tipo</th>
-                        <th className="pb-3 font-medium">Data</th>
-                        <th className="pb-3 font-medium">Estado</th>
+                        <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Cliente</th><th className="pb-3 font-medium">Tipo</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th>
                       </tr>
                     </thead>
                     <tbody className="text-sm">
@@ -366,9 +336,7 @@ export default function AdminDashboard() {
                           <td className="py-3 text-pp-cream-muted">{e.client}</td>
                           <td className="py-3 text-pp-cream-muted capitalize">{e.event_type}</td>
                           <td className="py-3 text-pp-cream-muted">{e.event_date}</td>
-                          <td className="py-3">
-                            <span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${getStatusText(e.status).replace('text-', 'bg-').replace('400', '500/10 text-')}`}>{e.status}</span>
-                          </td>
+                          <td className="py-3"><span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${getStatusText(e.status).replace('text-', 'bg-').replace('400', '500/10 text-')}`}>{e.status}</span></td>
                         </tr>
                       ))}
                     </tbody>
@@ -378,25 +346,18 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ===== CLIENTS TAB ===== */}
           {activeTab === 'clients' && (
             <div className="card-dark p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-serif text-lg font-semibold text-pp-cream">Todos os Contactos</h3>
-                <button onClick={() => setShowNewClientModal(true)} className="flex items-center gap-2 px-4 py-2 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">
-                  <Plus size={14} /> Novo Contacto
-                </button>
+                <button onClick={() => setShowNewClientModal(true)} className="flex items-center gap-2 px-4 py-2 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all"><Plus size={14} /> Novo Contacto</button>
               </div>
               {loading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : filteredContacts.length === 0 ? <div className="text-center py-8 text-pp-cream-dim text-sm">{searchQuery ? 'Nenhum contacto encontrado' : 'Sem contactos'}</div> : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="text-left text-[10px] text-pp-cream-dim uppercase tracking-wider border-b border-pp-border/20">
-                        <th className="pb-3 font-medium">Nome</th>
-                        <th className="pb-3 font-medium">Email</th>
-                        <th className="pb-3 font-medium">Serviço</th>
-                        <th className="pb-3 font-medium">Data</th>
-                        <th className="pb-3 font-medium">Estado</th>
+                        <th className="pb-3 font-medium">Nome</th><th className="pb-3 font-medium">Email</th><th className="pb-3 font-medium">Serviço</th><th className="pb-3 font-medium">Data</th><th className="pb-3 font-medium">Estado</th>
                       </tr>
                     </thead>
                     <tbody className="text-sm">
@@ -406,9 +367,7 @@ export default function AdminDashboard() {
                           <td className="py-3 text-pp-cream-muted">{c.email}</td>
                           <td className="py-3 text-pp-cream-muted capitalize">{c.service || '-'}</td>
                           <td className="py-3 text-pp-cream-muted">{new Date(c.created_at).toLocaleDateString('pt-AO')}</td>
-                          <td className="py-3">
-                            <span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${c.status === 'new' ? 'bg-yellow-500/10 text-yellow-400' : c.status === 'read' ? 'bg-blue-500/10 text-blue-400' : c.status === 'replied' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}`}>{c.status}</span>
-                          </td>
+                          <td className="py-3"><span className={`text-[10px] uppercase px-2 py-0.5 rounded-sm ${c.status === 'new' ? 'bg-yellow-500/10 text-yellow-400' : c.status === 'read' ? 'bg-blue-500/10 text-blue-400' : c.status === 'replied' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}`}>{c.status}</span></td>
                         </tr>
                       ))}
                     </tbody>
@@ -418,7 +377,6 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ===== REPORTS TAB ===== */}
           {activeTab === 'reports' && (
             <div className="space-y-6">
               <div className="card-dark p-6">
@@ -428,9 +386,7 @@ export default function AdminDashboard() {
                     <div key={i} className="bg-pp-dark-3/50 p-5 rounded-sm">
                       <div className="flex items-start justify-between mb-3">
                         <div className="w-8 h-8 rounded-sm bg-pp-gold/10 flex items-center justify-center"><stat.icon size={16} className="text-pp-gold" /></div>
-                        <div className={`flex items-center gap-1 text-[10px] ${stat.up ? 'text-green-400' : 'text-red-400'}`}>
-                          {stat.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}{stat.change}
-                        </div>
+                        <div className={`flex items-center gap-1 text-[10px] ${stat.up ? 'text-green-400' : 'text-red-400'}`}>{stat.up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}{stat.change}</div>
                       </div>
                       <p className="font-serif text-xl font-semibold text-pp-cream">{stat.value}</p>
                       <p className="text-[10px] text-pp-cream-dim font-sans mt-1">{stat.label}</p>
@@ -447,16 +403,8 @@ export default function AdminDashboard() {
                     { label: 'Relatório Financeiro', desc: 'Receitas e despesas do período' },
                   ].map((r) => (
                     <div key={r.label} className="flex items-center justify-between p-4 bg-pp-dark-3/50 rounded-sm hover:bg-pp-dark-3 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <FileText size={18} className="text-pp-gold" />
-                        <div>
-                          <p className="text-sm font-medium text-pp-cream">{r.label}</p>
-                          <p className="text-[10px] text-pp-cream-dim">{r.desc}</p>
-                        </div>
-                      </div>
-                      <button onClick={() => showToast(`A gerar: ${r.label}`)} className="px-4 py-1.5 bg-pp-gold/10 text-pp-gold text-[10px] tracking-wider uppercase hover:bg-pp-gold/20 transition-all">
-                        Gerar
-                      </button>
+                      <div className="flex items-center gap-3"><FileText size={18} className="text-pp-gold" /><div><p className="text-sm font-medium text-pp-cream">{r.label}</p><p className="text-[10px] text-pp-cream-dim">{r.desc}</p></div></div>
+                      <button onClick={() => showToast(`A gerar: ${r.label}`)} className="px-4 py-1.5 bg-pp-gold/10 text-pp-gold text-[10px] tracking-wider uppercase hover:bg-pp-gold/20 transition-all">Gerar</button>
                     </div>
                   ))}
                 </div>
@@ -464,46 +412,57 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ===== SETTINGS TAB ===== */}
+          {activeTab === 'content' && (
+            <div className="space-y-6">
+              <div className="card-dark p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-serif text-lg font-semibold text-pp-cream">Gerir Conteúdo do Site</h3>
+                  <button onClick={loadSiteContent} className="px-4 py-2 bg-pp-gold text-pp-dark font-semibold text-[11px] tracking-wider uppercase hover:bg-pp-gold-light transition-all">Actualizar</button>
+                </div>
+                {contentLoading ? <div className="text-center py-8 text-pp-cream-dim text-sm">A carregar...</div> : siteContent.length === 0 ? (
+                  <div className="text-center py-8 text-pp-cream-dim text-sm"><p>Sem conteúdo. Clique em Actualizar para carregar.</p></div>
+                ) : (
+                  <div className="space-y-6">
+                    {Array.from(new Set(siteContent.map(c => c.section))).map(section => (
+                      <div key={section}>
+                        <h4 className="text-xs font-sans text-pp-cream-dim uppercase tracking-wider mb-3 border-b border-pp-border/20 pb-2">{section}</h4>
+                        <div className="space-y-3">
+                          {siteContent.filter(c => c.section === section).map(item => (
+                            <div key={item.id} className="grid sm:grid-cols-[200px_1fr_auto] gap-3 items-start">
+                              <label className="text-sm text-pp-cream-muted pt-2.5">{item.key}</label>
+                              <textarea defaultValue={item.value} rows={item.value.length > 80 ? 3 : 1} className="w-full bg-pp-dark-3 border border-pp-border/30 px-3 py-2 text-sm text-pp-cream placeholder:text-pp-cream-dim/50 focus:border-pp-gold/50 focus:outline-none transition-colors resize-y" id={`content-${item.id}`} />
+                              <button onClick={() => { const el = document.getElementById(`content-${item.id}`) as HTMLTextAreaElement; if (el) handleContentSave(item.id, item.section, item.key, el.value); }} className="px-4 py-2 bg-pp-gold/10 text-pp-gold text-[10px] tracking-wider uppercase hover:bg-pp-gold/20 transition-all whitespace-nowrap">Guardar</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'settings' && (
             <div className="space-y-6 max-w-2xl">
               <div className="card-dark p-6">
                 <h3 className="font-serif text-lg font-semibold text-pp-cream mb-6">Informações da Conta</h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Nome</label>
-                    <input type="text" value="Lucíria Meury Rodrigues de Sousa" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Email</label>
-                    <input type="text" value="admin@primeprotocol.ao" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Cargo</label>
-                    <input type="text" value="Fundadora & CEO / Administrador" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" />
-                  </div>
+                  <div><label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Nome</label><input type="text" value="Lucíria Meury Rodrigues de Sousa" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" /></div>
+                  <div><label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Email</label><input type="text" value="admin@primeprotocol.ao" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" /></div>
+                  <div><label className="block text-[10px] font-sans text-pp-cream-dim uppercase tracking-wider mb-2">Cargo</label><input type="text" value="Fundadora & CEO / Administrador" disabled className="w-full bg-pp-dark-3 border border-pp-border/30 px-4 py-2.5 text-sm text-pp-cream opacity-60" /></div>
                 </div>
               </div>
               <div className="card-dark p-6">
                 <h3 className="font-serif text-lg font-semibold text-pp-cream mb-6">Preferências do Sistema</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between py-3 border-b border-pp-border/10">
-                    <div>
-                      <p className="text-sm text-pp-cream">Notificações por Email</p>
-                      <p className="text-[10px] text-pp-cream-dim">Receber alertas quando novos contactos chegam</p>
-                    </div>
-                    <button onClick={() => showToast('Preferência actualizada')} className="w-10 h-6 bg-pp-gold rounded-full relative cursor-pointer">
-                      <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
-                    </button>
+                    <div><p className="text-sm text-pp-cream">Notificações por Email</p><p className="text-[10px] text-pp-cream-dim">Receber alertas quando novos contactos chegam</p></div>
+                    <button onClick={() => showToast('Preferência actualizada')} className="w-10 h-6 bg-pp-gold rounded-full relative cursor-pointer"><span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" /></button>
                   </div>
                   <div className="flex items-center justify-between py-3">
-                    <div>
-                      <p className="text-sm text-pp-cream">Modo Escuro</p>
-                      <p className="text-[10px] text-pp-cream-dim">Interface sempre em modo escuro</p>
-                    </div>
-                    <button onClick={() => showToast('O modo escuro está sempre activo')} className="w-10 h-6 bg-pp-gold rounded-full relative cursor-pointer">
-                      <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
-                    </button>
+                    <div><p className="text-sm text-pp-cream">Modo Escuro</p><p className="text-[10px] text-pp-cream-dim">Interface sempre em modo escuro</p></div>
+                    <button onClick={() => showToast('O modo escuro está sempre activo')} className="w-10 h-6 bg-pp-gold rounded-full relative cursor-pointer"><span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" /></button>
                   </div>
                 </div>
               </div>
