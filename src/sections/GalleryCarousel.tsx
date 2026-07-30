@@ -69,6 +69,12 @@ export default function GalleryCarousel() {
         {/* Carousel */}
         <div
           ref={containerRef}
+          className="relative overflow-hidden mx-auto max-w-[1100px]"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+        <div
+          ref={containerRef}
           className="relative overflow-hidden"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
