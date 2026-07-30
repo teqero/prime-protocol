@@ -7,6 +7,9 @@ import {
 import { supabase, adminLogout, listAdminUsers, createAdminUser, deleteAdminUser, createEvent, createContact, updateEvent, deleteEvent, updateContact, deleteContact } from '../lib/supabase';
 import { fetchAllSiteContent, updateSiteContent } from '../hooks/useSiteContent';
 import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import { useAppContext } from '../context/AppContext';
 
 type EventItem = { id: string; name: string; event_date: string; status: string; client: string; event_type: string };
 type TaskItem = { id: string; task: string; deadline: string; priority: string; status: string };
@@ -24,6 +27,7 @@ const PRIORITY_STYLES: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
+  const { theme, toggleTheme, lang, setLang } = useAppContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [events, setEvents] = useState<EventItem[]>([]);
@@ -430,6 +434,10 @@ export default function AdminDashboard() {
               <p className="text-pp-cream-dim text-sm mt-1">Bem-vinda de volta, Lucíria</p>
             </div>
             <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher />
+                <ThemeToggle />
+              </div>
               <div className="relative hidden sm:block">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-pp-cream-dim" />
                 <input type="text" placeholder="Pesquisar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-pp-dark-3 border border-pp-border/30 rounded-sm pl-9 pr-4 py-2 text-sm text-pp-cream placeholder:text-pp-cream-dim/50 focus:border-pp-gold/50 focus:outline-none w-64" />

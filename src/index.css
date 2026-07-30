@@ -87,6 +87,23 @@ body.light-mode iframe {
   filter: none !important;
 }
 
+/* Override Tailwind static color classes for admin dashboard in light mode */
+body.light-mode .bg-pp-dark { background-color: var(--pp-bg) !important; }
+body.light-mode .bg-pp-dark-2 { background-color: var(--pp-bg-2) !important; }
+body.light-mode .bg-pp-dark-3 { background-color: var(--pp-bg-3) !important; }
+body.light-mode .bg-pp-dark-4 { background-color: #e8e0d4 !important; }
+body.light-mode .text-pp-cream { color: var(--pp-text) !important; }
+body.light-mode .text-pp-cream-dim { color: var(--pp-text-dim) !important; }
+body.light-mode .text-pp-cream-muted { color: var(--pp-text-muted) !important; }
+body.light-mode .border-pp-border { border-color: var(--pp-border) !important; }
+body.light-mode .card-dark {
+  background-color: rgba(236, 230, 218, 0.6) !important;
+  border-color: rgba(212, 203, 191, 0.4) !important;
+}
+body.light-mode iframe {
+  filter: none !important;
+}
+
 @layer components {
   .section-container {
     @apply w-full max-w-[1440px] mx-auto px-6 md:px-12 lg:px-20;
